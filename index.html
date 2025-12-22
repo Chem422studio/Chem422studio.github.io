@@ -546,8 +546,8 @@
             }
             const count = parseInt(args[0]);
             const text = args.slice(1).join(' ');
-            if (isNaN(count) || count < 1 || count > 50) {
-                alert("Count must be between 1 and 50.");
+            if (isNaN(count) || count < 1 || count > 5000) {
+                alert("Count must be between 1 and 5000.");
                 return;
             }
             return Array(count).fill(text).join(' ');
