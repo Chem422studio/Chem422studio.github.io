@@ -4,6 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Firebase Chatroom</title>
+    <!-- Prism.js for syntax highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-okaidia.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-html.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-json.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -308,7 +316,7 @@
         }
         .input-area button { padding: 12px 25px; }
         .hidden { display: none; }
-        /* Code block styling */
+        /* Enhanced code block styling with Prism */
         pre.code-block {
             background: #1a1a1a;
             padding: 12px;
@@ -329,8 +337,16 @@
             border-radius: 3px;
             cursor: pointer;
             font-size: 12px;
+            z-index: 5;
         }
         pre.code-block button:hover { background: #4752c4; }
+        pre.code-block code {
+            display: block;
+            padding: 0;
+        }
+        .language-python, .language-javascript, .language-html, .language-css, .language-json {
+            background: #1a1a1a !important;
+        }
     </style>
 </head>
 <body>
@@ -359,7 +375,7 @@
                 <div class="autocomplete-dropdown" id="autocompleteDropdown"></div>
                 <textarea
                     id="messageInput"
-                    placeholder="Type a message... (/code, /random 1 - 10, /re 5 hi, /cal 5+3*2, Shift+Enter for new line)"
+                    placeholder="Type a message... (/code js, /code py, /random, /re 5 hi, Shift+Enter for new line)"
                     rows="3"
                     onkeydown="handleKeyPress(event)"
                     oninput="handleAutocomplete()"
@@ -445,8 +461,8 @@
             { cmd: '/dm', desc: 'Send private message - /dm [username] [message]' },
             { cmd: '/cooleffect', desc: 'Activate a cool effect... 😎' },
             { cmd: '/dem', desc: 'Delete all your messages in this room' },
-            { cmd: '/code', desc: 'Send code in a nice block (multi-line supported)' },
-            { cmd: '/random', desc: 'Generate random number - /random min - max' },
+            { cmd: '/code', desc: 'Send code with syntax highlighting - /code [lang] (js, py, html, css, json)' },
+            { cmd: '/random', desc: 'Generate random number between 1 and 10000' },
             { cmd: '/re', desc: 'Repeat text - /re count text' },
             { cmd: '/cal', desc: 'Calculate simple math - /cal 5 + 3 * 2' }
         ];
@@ -524,38 +540,27 @@
             }
         }
 
-        function handleRandomCommand(args) {
-            if (args.length < 3 || args[1] !== '-') {
-                alert("Usage: /random min - max\nExample: /random 1 - 10");
-                return;
-            }
-            const min = parseInt(args[0]);
-            const max = parseInt(args[2]);
-            if (isNaN(min) || isNaN(max)) {
-                alert("Please enter valid numbers.");
-                return;
-            }
-            const random = Math.floor(Math.random() * (max - min + 1)) + min;
+        function handleRandomCommand() {
+            const random = Math.floor(Math.random() * 10000) + 1;
             return random.toString();
         }
 
         function handleRepeatCommand(args) {
             if (args.length < 2) {
                 alert("Usage: /re count text\nExample: /re 5 hi");
-                return;
+                return null;
             }
             const count = parseInt(args[0]);
             const text = args.slice(1).join(' ');
-            if (isNaN(count) || count < 1 || count > 5000) {
-                alert("Count must be between 1 and 5000.");
-                return;
+            if (isNaN(count) || count < 1 || count > 50) {
+                alert("Count must be between 1 and 50.");
+                return null;
             }
             return Array(count).fill(text).join(' ');
         }
 
         function handleCalCommand(expression) {
             try {
-                // Very simple safe eval for basic math (+ - * /)
                 const result = new Function('return ' + expression.replace(/[^0-9+\-*/(). ]/g, ''))();
                 return result.toString();
             } catch (e) {
@@ -571,6 +576,7 @@
 
             let contentToSend = message;
             let isCode = false;
+            let codeLang = 'javascript'; // default
             let isRandom = false;
             let isRepeat = false;
             let isCal = false;
@@ -582,16 +588,10 @@
                 return;
             }
 
-            if (message.toLowerCase().startsWith('/random ')) {
-                const args = message.substring(8).trim().split(/\s+/);
-                finalText = handleRandomCommand(args);
-                if (finalText) {
-                    isRandom = true;
-                    contentToSend = `Random number: ${finalText}`;
-                } else {
-                    input.value = '';
-                    return;
-                }
+            if (message.toLowerCase().startsWith('/random')) {
+                finalText = handleRandomCommand();
+                isRandom = true;
+                contentToSend = `Random number (1-10000): ${finalText}`;
             } else if (message.toLowerCase().startsWith('/re ')) {
                 const args = message.substring(4).trim().split(/\s+/);
                 finalText = handleRepeatCommand(args);
@@ -612,9 +612,16 @@
                     input.value = '';
                     return;
                 }
-            } else if (message.toLowerCase() === '/code') {
+            } else if (message.toLowerCase().startsWith('/code')) {
                 isCode = true;
-                contentToSend = message; // will be handled in display
+                const parts = message.split(/\s+/);
+                if (parts.length > 1) {
+                    const lang = parts[1].toLowerCase();
+                    if (['js', 'javascript', 'py', 'python', 'html', 'css', 'json'].includes(lang)) {
+                        codeLang = lang === 'js' ? 'javascript' : lang === 'py' ? 'python' : lang;
+                    }
+                }
+                contentToSend = message; // raw code
             }
 
             const messagesRef = ref(db, `chatrooms/${currentRoom}/messages`);
@@ -693,6 +700,7 @@
                 font: font,
                 privateTo: privateTo,
                 code: isCode,
+                codeLang: isCode ? codeLang : null,
                 timestamp: Date.now()
             });
 
@@ -777,8 +785,19 @@
                         const escapedCode = msg.text
                             .replace(/&/g, '&amp;')
                             .replace(/</g, '&lt;')
-                            .replace(/>/g, '&gt;');
-                        content.innerHTML = `${prefix}<br><pre class="code-block"><button onclick="navigator.clipboard.writeText(this.parentNode.querySelector('code').innerText); alert('Code copied!')">Copy</button><code>${escapedCode}</code></pre>`;
+                            .replace(/>/g, '&gt;')
+                            .replace(/"/g, '&quot;')
+                            .replace(/'/g, '&#39;');
+                        const langClass = msg.codeLang || 'javascript';
+                        content.innerHTML = `
+                            ${prefix}<br>
+                            <pre class="code-block language-${langClass}">
+                                <button onclick="navigator.clipboard.writeText(this.parentNode.querySelector('code').innerText); alert('Code copied!')">Copy</button>
+                                <code class="language-${langClass}">${escapedCode}</code>
+                            </pre>
+                        `;
+                        // Re-highlight after DOM insertion
+                        setTimeout(() => Prism.highlightAllUnder(content), 100);
                     } else {
                         const textWithLinks = linkify(msg.text);
                         content.innerHTML = `${prefix}${textWithLinks}`;
