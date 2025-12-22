@@ -10,7 +10,6 @@
             padding: 0;
             box-sizing: border-box;
         }
-
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: #1a1a1a;
@@ -20,7 +19,6 @@
             justify-content: center;
             align-items: center;
         }
-
         .container {
             width: 100%;
             max-width: 800px;
@@ -31,14 +29,12 @@
             display: flex;
             flex-direction: column;
         }
-
         .header {
             padding: 20px;
             background: #3a3a3a;
             border-radius: 10px 10px 0 0;
             border-bottom: 2px solid #4a4a4a;
         }
-
         .header input {
             width: 100%;
             padding: 12px;
@@ -48,11 +44,9 @@
             color: #ffffff;
             font-size: 16px;
         }
-
         .header input::placeholder {
             color: #999;
         }
-
         .main-content {
             flex: 1;
             display: flex;
@@ -62,7 +56,6 @@
             gap: 20px;
             padding: 40px;
         }
-
         .btn {
             padding: 15px 40px;
             font-size: 18px;
@@ -74,19 +67,15 @@
             transition: background 0.3s;
             min-width: 200px;
         }
-
         .btn:hover {
             background: #4752c4;
         }
-
         .btn-danger {
             background: #ed4245;
         }
-
         .btn-danger:hover {
             background: #c03537;
         }
-
         .modal {
             position: fixed;
             top: 0;
@@ -99,23 +88,19 @@
             align-items: center;
             z-index: 1000;
         }
-
         .modal.active {
             display: flex;
         }
-
         .modal-content {
             background: #2d2d2d;
             padding: 30px;
             border-radius: 10px;
             min-width: 400px;
         }
-
         .modal-content h2 {
             margin-bottom: 20px;
             color: #5865f2;
         }
-
         .modal-content input {
             width: 100%;
             padding: 12px;
@@ -126,27 +111,22 @@
             color: #ffffff;
             font-size: 16px;
         }
-
         .modal-buttons {
             display: flex;
             gap: 10px;
             justify-content: flex-end;
         }
-
         .modal-buttons button {
             padding: 10px 20px;
         }
-
         .chatroom {
             display: none;
             flex-direction: column;
             height: 100%;
         }
-
         .chatroom.active {
             display: flex;
         }
-
         .chatroom-header {
             padding: 15px 20px;
             background: #3a3a3a;
@@ -155,13 +135,11 @@
             justify-content: space-between;
             align-items: center;
         }
-
         .chatroom-header .left {
             display: flex;
             align-items: center;
             gap: 15px;
         }
-
         .back-btn {
             padding: 8px 15px;
             background: #4a4a4a;
@@ -170,11 +148,9 @@
             color: white;
             cursor: pointer;
         }
-
         .back-btn:hover {
             background: #5a5a5a;
         }
-
         .room-code {
             padding: 8px 15px;
             background: #4a4a4a;
@@ -182,11 +158,9 @@
             cursor: pointer;
             user-select: all;
         }
-
         .room-code:hover {
             background: #5a5a5a;
         }
-
         .messages {
             flex: 1;
             padding: 20px;
@@ -195,7 +169,6 @@
             flex-direction: column;
             gap: 10px;
         }
-
         .message {
             padding: 10px 15px;
             background: #3a3a3a;
@@ -206,11 +179,9 @@
             justify-content: space-between;
             align-items: center;
         }
-
         .message-content {
             flex: 1;
         }
-
         .edit-icon {
             opacity: 0;
             cursor: pointer;
@@ -221,15 +192,12 @@
             transition: opacity 0.2s;
             margin-left: 10px;
         }
-
         .message:hover .edit-icon {
             opacity: 1;
         }
-
         .edit-icon:hover {
             background: #5a5a5a;
         }
-
         .delete-icon {
             opacity: 0;
             cursor: pointer;
@@ -240,25 +208,20 @@
             transition: opacity 0.2s;
             margin-left: 5px;
         }
-
         .message:hover .delete-icon {
             opacity: 1;
         }
-
         .delete-icon:hover {
             background: #c03537;
         }
-
         .message-link {
             color: #5865f2;
             text-decoration: underline;
             cursor: pointer;
         }
-
         .message-link:hover {
             color: #4752c4;
         }
-
         .message-image {
             max-width: 300px;
             max-height: 300px;
@@ -266,7 +229,6 @@
             margin-top: 10px;
             cursor: pointer;
         }
-
         .html-preview {
             background: #1a1a1a;
             border: 1px solid #4a4a4a;
@@ -277,15 +239,73 @@
             max-width: 500px;
             height: 300px;
             overflow: hidden;
+            position: relative;
         }
-
         .html-preview iframe {
             width: 100%;
             height: 100%;
             border: none;
             border-radius: 5px;
         }
-
+        .fullscreen-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: #5865f2;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+            z-index: 10;
+        }
+        .fullscreen-btn:hover {
+            background: #4752c4;
+        }
+        .fullscreen-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+        }
+        .fullscreen-overlay.active {
+            display: flex;
+        }
+        .fullscreen-content {
+            width: 90vw;
+            height: 90vh;
+            background: white;
+            border-radius: 10px;
+            position: relative;
+        }
+        .fullscreen-content iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 10px;
+        }
+        .close-fullscreen {
+            position: absolute;
+            top: -40px;
+            right: 0;
+            background: #ed4245;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .close-fullscreen:hover {
+            background: #c03537;
+        }
         .autocomplete-dropdown {
             position: absolute;
             bottom: 100%;
@@ -299,41 +319,33 @@
             display: none;
             z-index: 100;
         }
-
         .autocomplete-dropdown.active {
             display: block;
         }
-
         .autocomplete-item {
             padding: 10px 15px;
             cursor: pointer;
             border-bottom: 1px solid #2a2a2a;
         }
-
         .autocomplete-item:hover {
             background: #4a4a4a;
         }
-
         .autocomplete-item .command {
             color: #5865f2;
             font-weight: bold;
         }
-
         .autocomplete-item .description {
             color: #999;
             font-size: 12px;
         }
-
         .message.server {
             background: #4a4a4a;
             color: #999;
             font-style: italic;
         }
-
         .message.owner {
             border-left: 3px solid #5865f2;
         }
-
         .rainbow {
             background: linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3);
             background-size: 200% 200%;
@@ -342,12 +354,10 @@
             background-clip: text;
             animation: rainbow 3s linear infinite;
         }
-
         @keyframes rainbow {
             0% { background-position: 0% 50%; }
             100% { background-position: 200% 50%; }
         }
-
         .input-area {
             padding: 15px 20px;
             background: #3a3a3a;
@@ -356,7 +366,6 @@
             gap: 10px;
             position: relative;
         }
-
         .input-area input {
             flex: 1;
             padding: 12px;
@@ -366,11 +375,9 @@
             color: #ffffff;
             font-size: 16px;
         }
-
         .input-area button {
             padding: 12px 25px;
         }
-
         .hidden {
             display: none;
         }
@@ -388,7 +395,6 @@
                 <button class="btn" onclick="showJoinModal()">Join Chatroom</button>
             </div>
         </div>
-
         <!-- Chatroom -->
         <div id="chatroom" class="chatroom">
             <div class="chatroom-header">
@@ -406,7 +412,6 @@
             </div>
         </div>
     </div>
-
     <!-- Create Chatroom Modal -->
     <div id="createModal" class="modal">
         <div class="modal-content">
@@ -418,7 +423,6 @@
             </div>
         </div>
     </div>
-
     <!-- Join Chatroom Modal -->
     <div id="joinModal" class="modal">
         <div class="modal-content">
@@ -430,7 +434,6 @@
             </div>
         </div>
     </div>
-
     <!-- Edit Message Modal -->
     <div id="editModal" class="modal">
         <div class="modal-content">
@@ -442,11 +445,14 @@
             </div>
         </div>
     </div>
-
+    <!-- Fullscreen Overlay -->
+    <div class="fullscreen-overlay" id="fullscreenOverlay">
+        <div class="fullscreen-content" id="fullscreenContent"></div>
+        <button class="close-fullscreen" onclick="closeFullscreen()">Close</button>
+    </div>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, set, push, onValue, onDisconnect, remove, get, child } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
         const firebaseConfig = {
             apiKey: "AIzaSyBmq1EwejAgVQ37hUyLZpxG19AtxvAA74M",
             authDomain: "ggjimbob-2f0f7.firebaseapp.com",
@@ -457,73 +463,63 @@
             appId: "1:75510860344:web:a63313536e73eb6239b4cd",
             measurementId: "G-1P46LYPC4J"
         };
-
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-
         let currentRoom = null;
         let currentUser = null;
         let isOwner = false;
         let userRef = null;
         let messagesListener = null;
         let editingMessageId = null;
-
+        let participants = [];
         const commands = [
             { cmd: '/color', desc: 'Change text color - /color [color] [text]', sub: ['red', 'blue', 'green', 'yellow', 'purple', 'orange', 'pink', 'cyan', 'white', 'rainbow'] },
             { cmd: '/website', desc: 'Display website code - /website [html/css/js code]' },
             { cmd: '/pic', desc: 'Display image - /pic [image url]' },
             { cmd: '/fonts', desc: 'Change font - /fonts [font] [text]', sub: ['Arial', 'Comic Sans MS', 'Courier New', 'Georgia', 'Impact', 'Times New Roman', 'Trebuchet MS', 'Verdana', 'Brush Script MT', 'Palatino'] },
+            { cmd: '/dm', desc: 'Send private message - /dm [username] [message]' },
             { cmd: '/cooleffect', desc: 'Activate a cool effect... 😎' }
         ];
-
         const availableFonts = [
-            'Arial', 'Courier New', 'Georgia', 'Times New Roman', 
+            'Arial', 'Courier New', 'Georgia', 'Times New Roman',
             'Verdana', 'Comic Sans MS', 'Impact', 'Trebuchet MS',
             'Brush Script MT', 'Lucida Console', 'Palatino', 'Garamond'
         ];
-
         window.showCreateModal = () => {
             if (!validateUsername()) return;
             document.getElementById('createModal').classList.add('active');
             document.getElementById('createCodeInput').value = generateCode();
         };
-
         window.hideCreateModal = () => {
             document.getElementById('createModal').classList.remove('active');
         };
-
         window.showJoinModal = () => {
             if (!validateUsername()) return;
             document.getElementById('joinModal').classList.add('active');
         };
-
         window.hideJoinModal = () => {
             document.getElementById('joinModal').classList.remove('active');
         };
-
         window.showEditModal = (messageId, currentText) => {
             editingMessageId = messageId;
             document.getElementById('editMessageInput').value = currentText;
             document.getElementById('editModal').classList.add('active');
         };
-
         window.hideEditModal = () => {
             document.getElementById('editModal').classList.remove('active');
             editingMessageId = null;
         };
-
         window.saveEditedMessage = async () => {
             if (!editingMessageId) return;
-            
+           
             const newText = document.getElementById('editMessageInput').value.trim();
             if (!newText) {
                 alert('Message cannot be empty.');
                 return;
             }
-
             const messageRef = ref(db, `chatrooms/${currentRoom}/messages/${editingMessageId}`);
             const snapshot = await get(messageRef);
-            
+           
             if (snapshot.exists()) {
                 const messageData = snapshot.val();
                 await set(messageRef, {
@@ -532,82 +528,115 @@
                     edited: true
                 });
             }
-
             hideEditModal();
         };
-
         window.deleteMessage = async (messageId) => {
             if (!isOwner) return;
-            
+           
             if (confirm('Are you sure you want to delete this message?')) {
                 const messageRef = ref(db, `chatrooms/${currentRoom}/messages/${messageId}`);
                 await remove(messageRef);
             }
         };
-
         window.deleteOwnMessage = async (messageId, messageUser) => {
             if (messageUser !== currentUser && !isOwner) return;
-            
+           
             if (confirm('Are you sure you want to delete this message?')) {
                 const messageRef = ref(db, `chatrooms/${currentRoom}/messages/${messageId}`);
                 await remove(messageRef);
             }
         };
-
         window.handleAutocomplete = () => {
             const input = document.getElementById('messageInput');
             const dropdown = document.getElementById('autocompleteDropdown');
-            const value = input.value;
-
+            const value = input.value.trim();
+            dropdown.innerHTML = '';
             if (value.startsWith('/')) {
-                const searchTerm = value.toLowerCase();
-                const filtered = commands.filter(c => c.cmd.toLowerCase().startsWith(searchTerm));
-
-                if (filtered.length > 0) {
-                    dropdown.innerHTML = filtered.map(c => 
-                        `<div class="autocomplete-item" onclick="selectCommand('${c.cmd}')">
-                            <div class="command">${c.cmd}</div>
-                            <div class="description">${c.desc}</div>
-                        </div>`
-                    ).join('');
-                    dropdown.classList.add('active');
-                } else {
-                    dropdown.classList.remove('active');
+                const parts = value.split(/\s+/);
+                const searchTerm = parts[0].toLowerCase();
+                if (parts.length === 1) {
+                    // Show commands
+                    const filteredCommands = commands.filter(c => c.cmd.toLowerCase().startsWith(searchTerm));
+                    if (filteredCommands.length > 0) {
+                        dropdown.innerHTML = filteredCommands.map(c =>
+                            `<div class="autocomplete-item" onclick="selectCommand('${c.cmd}')">
+                                <div class="command">${c.cmd}</div>
+                                <div class="description">${c.desc}</div>
+                            </div>`
+                        ).join('');
+                        dropdown.classList.add('active');
+                    } else {
+                        dropdown.classList.remove('active');
+                    }
+                } else if (parts.length >= 2) {
+                    // Show subcommands if available
+                    const cmd = commands.find(c => c.cmd.toLowerCase() === searchTerm);
+                    if (cmd && cmd.sub) {
+                        const subSearch = parts[1].toLowerCase();
+                        const filteredSubs = cmd.sub.filter(s => s.toLowerCase().startsWith(subSearch));
+                        if (filteredSubs.length > 0) {
+                            dropdown.innerHTML = filteredSubs.map(s =>
+                                `<div class="autocomplete-item" onclick="selectSub('${cmd.cmd} ${s}')">
+                                    <div class="command">${s}</div>
+                                </div>`
+                            ).join('');
+                            dropdown.classList.add('active');
+                        } else {
+                            dropdown.classList.remove('active');
+                        }
+                    } else if (searchTerm === '/dm') {
+                        const subSearch = parts[1].toLowerCase();
+                        const filteredUsers = participants.filter(u => u.toLowerCase().startsWith(subSearch) && u !== currentUser);
+                        if (filteredUsers.length > 0) {
+                            dropdown.innerHTML = filteredUsers.map(u =>
+                                `<div class="autocomplete-item" onclick="selectSub('/dm ${u}')">
+                                    <div class="command">${u}</div>
+                                </div>`
+                            ).join('');
+                            dropdown.classList.add('active');
+                        } else {
+                            dropdown.classList.remove('active');
+                        }
+                    } else {
+                        dropdown.classList.remove('active');
+                    }
                 }
             } else {
                 dropdown.classList.remove('active');
             }
         };
-
         window.selectCommand = (cmd) => {
             const input = document.getElementById('messageInput');
             input.value = cmd + ' ';
             input.focus();
             document.getElementById('autocompleteDropdown').classList.remove('active');
         };
-
+        window.selectSub = (value) => {
+            const input = document.getElementById('messageInput');
+            const parts = input.value.split(/\s+/);
+            input.value = value + ' ';
+            input.focus();
+            document.getElementById('autocompleteDropdown').classList.remove('active');
+        };
         window.createChatroom = async () => {
             try {
                 let code = document.getElementById('createCodeInput').value.trim();
                 if (!code) code = generateCode();
-                
+               
                 const roomRef = ref(db, `chatrooms/${code}`);
                 const snapshot = await get(roomRef);
-                
+               
                 if (snapshot.exists()) {
                     alert('This chatroom code already exists. Please choose another.');
                     return;
                 }
-
                 currentRoom = code;
                 currentUser = document.getElementById('usernameInput').value.trim();
                 isOwner = true;
-
                 await set(roomRef, {
                     owner: currentUser,
                     created: Date.now()
                 });
-
                 joinRoom(code, true);
                 hideCreateModal();
             } catch (error) {
@@ -615,7 +644,6 @@
                 alert('Error creating chatroom: ' + error.message);
             }
         };
-
         window.joinChatroom = async () => {
             try {
                 const code = document.getElementById('joinCodeInput').value.trim();
@@ -623,19 +651,16 @@
                     alert('Please enter a chatroom code.');
                     return;
                 }
-
                 const roomRef = ref(db, `chatrooms/${code}`);
                 const snapshot = await get(roomRef);
-                
+               
                 if (!snapshot.exists()) {
                     alert('Chatroom does not exist.');
                     return;
                 }
-
                 currentRoom = code;
                 currentUser = document.getElementById('usernameInput').value.trim();
                 isOwner = false;
-
                 joinRoom(code, false);
                 hideJoinModal();
             } catch (error) {
@@ -643,16 +668,14 @@
                 alert('Error joining chatroom: ' + error.message);
             }
         };
-
         async function joinRoom(code, owner) {
             document.getElementById('mainMenu').style.display = 'none';
             document.getElementById('chatroom').classList.add('active');
             document.getElementById('roomCodeDisplay').textContent = `Room: ${code}`;
-            
+           
             if (owner) {
                 document.getElementById('closeChatroomBtn').classList.remove('hidden');
             }
-
             // Add user to participants
             const participantsRef = ref(db, `chatrooms/${code}/participants`);
             userRef = push(participantsRef);
@@ -660,140 +683,140 @@
                 name: currentUser,
                 joined: Date.now()
             });
-
             // Set up disconnect handler
             onDisconnect(userRef).remove();
-
             // Send join message
             sendSystemMessage(`${currentUser} joined`);
-
             // Listen for messages
             const messagesRef = ref(db, `chatrooms/${code}/messages`);
             messagesListener = onValue(messagesRef, (snapshot) => {
                 const messages = snapshot.val();
                 displayMessages(messages);
             });
-
-            // Listen for participants leaving
+            // Listen for participants
             onValue(participantsRef, (snapshot) => {
-                // This will trigger when participants change
+                const parts = snapshot.val() || {};
+                participants = [...new Set(Object.values(parts).map(p => p.name))];
             });
         }
-
         window.sendMessage = async () => {
             const input = document.getElementById('messageInput');
             let message = input.value.trim();
-            
+           
             if (!message) return;
-
             const messagesRef = ref(db, `chatrooms/${currentRoom}/messages`);
             const newMessageRef = push(messagesRef);
-            
+           
             let color = null;
             let isRainbow = false;
             let isWebsite = false;
             let isImage = false;
             let font = null;
+            let privateTo = null;
+            let contentToSend = message;
 
-            // Check for /cooleffect command
-            if (message.toLowerCase() === '/cooleffect') {
+            // Check for /dm
+            if (message.startsWith('/dm ')) {
+                const dmParts = message.substring(4).trim().split(/\s+/);
+                if (dmParts.length >= 2) {
+                    privateTo = dmParts[0];
+                    contentToSend = dmParts.slice(1).join(' ');
+                } else {
+                    alert('Invalid /dm format. Use /dm [username] [message]');
+                    return;
+                }
+            }
+           
+            // Now process contentToSend for other commands
+            if (contentToSend.toLowerCase() === '/cooleffect') {
                 // Rickroll the user who typed it
                 window.open('https://www.youtube.com/watch?v=dQw4w9WgXcQ', '_blank');
                 await sendSystemMessage(`${currentUser} activated a cool effect! ✨`);
                 input.value = '';
                 return;
             }
-
             // Check for ggjimbob
-            if (message.toLowerCase() === 'ggjimbob') {
+            if (contentToSend.toLowerCase() === 'ggjimbob') {
                 isRainbow = true;
             }
-
             // Check for /website command
-            if (message.startsWith('/website ')) {
+            if (contentToSend.startsWith('/website ')) {
                 isWebsite = true;
-                message = message.substring(9);
+                contentToSend = contentToSend.substring(9);
             }
-
             // Check for /pic command
-            else if (message.startsWith('/pic ')) {
+            else if (contentToSend.startsWith('/pic ')) {
                 isImage = true;
-                message = message.substring(5);
+                contentToSend = contentToSend.substring(5);
             }
-
             // Check for /fonts command
-            else if (message.startsWith('/fonts ')) {
-                const parts = message.substring(7).split(' ');
+            else if (contentToSend.startsWith('/fonts ')) {
+                const parts = contentToSend.substring(7).split(' ');
                 if (parts.length >= 2) {
                     font = parts[0];
-                    message = parts.slice(1).join(' ');
+                    contentToSend = parts.slice(1).join(' ');
                 }
             }
-
             // Check for /color command
-            else if (message.startsWith('/color ')) {
-                const parts = message.substring(7).split(' ');
+            else if (contentToSend.startsWith('/color ')) {
+                const parts = contentToSend.substring(7).split(' ');
                 if (parts.length >= 2) {
                     if (parts[0].toLowerCase() === 'rainbow') {
                         isRainbow = true;
-                        message = parts.slice(1).join(' ');
+                        contentToSend = parts.slice(1).join(' ');
                     } else {
                         color = parts[0];
-                        message = parts.slice(1).join(' ');
+                        contentToSend = parts.slice(1).join(' ');
                     }
                 }
             }
-
             // Auto-detect image URLs if not using /pic
             else {
                 const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp'];
-                const lowerMessage = message.toLowerCase();
+                const lowerMessage = contentToSend.toLowerCase();
                 if (imageExtensions.some(ext => lowerMessage.includes(ext))) {
                     isImage = true;
                 }
             }
-
             await set(newMessageRef, {
                 user: currentUser,
-                text: message,
+                text: contentToSend,
                 owner: isOwner,
                 color: color,
                 rainbow: isRainbow,
                 website: isWebsite,
                 image: isImage,
                 font: font,
+                privateTo: privateTo,
                 timestamp: Date.now()
             });
-
             input.value = '';
             document.getElementById('autocompleteDropdown').classList.remove('active');
         };
-
         async function sendSystemMessage(text) {
             const messagesRef = ref(db, `chatrooms/${currentRoom}/messages`);
             const newMessageRef = push(messagesRef);
-            
+           
             await set(newMessageRef, {
                 system: true,
                 text: text,
                 timestamp: Date.now()
             });
         }
-
         function displayMessages(messages) {
             const container = document.getElementById('messagesContainer');
             container.innerHTML = '';
-
             if (!messages) return;
-
-            const sortedMessages = Object.entries(messages).sort((a, b) => 
+            const sortedMessages = Object.entries(messages).sort((a, b) =>
                 a[1].timestamp - b[1].timestamp
             );
-
             sortedMessages.forEach(([id, msg]) => {
+                if (msg.privateTo && currentUser !== msg.user && currentUser !== msg.privateTo) {
+                    return; // Skip if not sender or receiver
+                }
                 const div = document.createElement('div');
                 div.className = 'message';
-                
+               
                 if (msg.system) {
                     div.classList.add('server');
                     const content = document.createElement('div');
@@ -804,25 +827,28 @@
                     if (msg.owner) {
                         div.classList.add('owner');
                     }
-                    
-                    const prefix = msg.owner ? `owner ${msg.user}: ` : `${msg.user}: `;
+                   
+                    let prefix = msg.user + ': ';
+                    if (msg.privateTo) {
+                        prefix = `DM ${currentUser === msg.user ? 'to ' + msg.privateTo : 'from ' + msg.user}: `;
+                    }
                     const content = document.createElement('div');
                     content.className = 'message-content';
-                    
+                   
                     // Apply font if specified
                     if (msg.font) {
                         content.style.fontFamily = msg.font;
                     }
-
                     // Display website with iframe
                     if (msg.website) {
-                        content.innerHTML = `${prefix}<br><div class="html-preview"><iframe srcdoc="${msg.text.replace(/"/g, '&quot;')}"></iframe></div>`;
+                        const escapedText = msg.text.replace(/"/g, '&quot;');
+                        content.innerHTML = `${prefix}<br><div class="html-preview"><iframe sandbox="allow-scripts" srcdoc="${escapedText}"></iframe><button class="fullscreen-btn" onclick="openFullscreen(this.parentNode)">Fullscreen</button></div>`;
                     }
                     // Display image with /pic command
                     else if (msg.image) {
                         const textWithLinks = linkify(msg.text);
                         content.innerHTML = `${prefix}${textWithLinks}`;
-                        
+                       
                         // Try to extract and display image
                         const urlMatch = msg.text.match(/https?:\/\/[^\s]+/);
                         if (urlMatch) {
@@ -849,13 +875,11 @@
                         const textWithLinks = linkify(msg.text);
                         content.innerHTML = `${prefix}${textWithLinks}`;
                     }
-
                     if (msg.edited) {
                         content.innerHTML += ' <span style="color: #999; font-size: 11px;">(edited)</span>';
                     }
-                    
+                   
                     div.appendChild(content);
-
                     // Users can delete their own messages
                     if (msg.user === currentUser && !msg.system) {
                         const deleteBtn = document.createElement('div');
@@ -864,7 +888,6 @@
                         deleteBtn.onclick = () => deleteOwnMessage(id, msg.user);
                         div.appendChild(deleteBtn);
                     }
-
                     // Add edit and delete buttons for owner
                     if (isOwner && !msg.system) {
                         const editBtn = document.createElement('div');
@@ -872,7 +895,6 @@
                         editBtn.textContent = '✏️ Edit';
                         editBtn.onclick = () => showEditModal(id, msg.text);
                         div.appendChild(editBtn);
-
                         // Only show delete if not already shown for own message
                         if (msg.user !== currentUser) {
                             const deleteBtn = document.createElement('div');
@@ -883,83 +905,87 @@
                         }
                     }
                 }
-                
+               
                 container.appendChild(div);
             });
-
             container.scrollTop = container.scrollHeight;
         }
-
         function linkify(text) {
             const urlRegex = /(https?:\/\/[^\s]+)/g;
             return text.replace(urlRegex, (url) => {
                 return `<a href="${url}" target="_blank" class="message-link">${url}</a>`;
             });
         }
-
+        window.openFullscreen = (preview) => {
+            const srcdoc = preview.querySelector('iframe').getAttribute('srcdoc');
+            const overlay = document.getElementById('fullscreenOverlay');
+            const content = document.getElementById('fullscreenContent');
+            content.innerHTML = `<iframe sandbox="allow-scripts" srcdoc="${srcdoc}"></iframe>`;
+            overlay.classList.add('active');
+        };
+        window.closeFullscreen = () => {
+            const overlay = document.getElementById('fullscreenOverlay');
+            const content = document.getElementById('fullscreenContent');
+            overlay.classList.remove('active');
+            content.innerHTML = '';
+        };
         window.leaveChatroom = async () => {
             if (userRef) {
                 await sendSystemMessage(`${currentUser} left`);
                 await remove(userRef);
             }
-
             if (messagesListener) {
                 messagesListener();
             }
-
             document.getElementById('chatroom').classList.remove('active');
             document.getElementById('mainMenu').style.display = 'block';
             document.getElementById('messagesContainer').innerHTML = '';
             document.getElementById('closeChatroomBtn').classList.add('hidden');
-            
+           
             currentRoom = null;
             currentUser = null;
             isOwner = false;
             userRef = null;
+            participants = [];
         };
-
         window.closeChatroom = async () => {
             if (!isOwner) return;
-
             if (confirm('Are you sure you want to close this chatroom? This will remove all data and no one will be able to join.')) {
                 const roomRef = ref(db, `chatrooms/${currentRoom}`);
-                
+               
                 // Send a closing message before deleting
                 await sendSystemMessage('Chatroom closed by owner');
-                
+               
                 // Wait a moment for the message to be sent
                 setTimeout(async () => {
                     // Delete the entire chatroom
                     await remove(roomRef);
-                    
+                   
                     if (messagesListener) {
                         messagesListener();
                     }
-
                     document.getElementById('chatroom').classList.remove('active');
                     document.getElementById('mainMenu').style.display = 'block';
                     document.getElementById('messagesContainer').innerHTML = '';
                     document.getElementById('closeChatroomBtn').classList.add('hidden');
-                    
+                   
                     currentRoom = null;
                     currentUser = null;
                     isOwner = false;
                     userRef = null;
+                    participants = [];
                 }, 500);
             }
         };
-
         window.copyCode = () => {
             navigator.clipboard.writeText(currentRoom);
             alert('Room code copied to clipboard!');
         };
-
         window.handleKeyPress = (e) => {
             if (e.key === 'Enter') {
                 sendMessage();
             }
         };
-
         function validateUsername() {
             const username = document.getElementById('usernameInput').value.trim();
             if (!username) {
@@ -968,7 +994,6 @@
             }
             return true;
         }
-
         function generateCode() {
             const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
             let code = '';
