@@ -349,7 +349,7 @@
         .language-python, .language-javascript, .language-html, .language-css, .language-json, .language-nim, .language-cpp {
             background: #1a1a1a !important;
         }
-        /* Rainbow chatroom effect (only for ggjimbob) */
+        /* Rainbow chatroom effect (only for exact ggjimbob) */
         .rainbow-chatroom {
             animation: rainbow-bg 5s linear;
         }
@@ -469,6 +469,7 @@
         let messagesListener = null;
         let editingMessageId = null;
         let participants = [];
+        let lastProcessedTimestamp = 0; // Track the latest timestamp we've processed
 
         const commands = [
             { cmd: '/color', desc: 'Change text color - /color [color] [text]', sub: ['red', 'blue', 'green', 'yellow', 'purple', 'orange', 'pink', 'cyan', 'white', 'rainbow'] },
@@ -861,9 +862,10 @@
                         content.innerHTML += ' <span style="color: #999; font-size: 11px;">(edited)</span>';
                     }
 
-                    // Check for ggjimbob (case-insensitive)
-                    if (msg.text && msg.text.toLowerCase() === 'ggjimbob') {
+                    // Check for exact ggjimbob (case-insensitive, exact match)
+                    if (msg.text && msg.text.trim().toLowerCase() === 'ggjimbob' && msg.timestamp > lastProcessedTimestamp) {
                         hasGgjimbob = true;
+                        lastProcessedTimestamp = msg.timestamp; // Update to prevent re-trigger
                         content.innerHTML = `${prefix}<span class="rainbow">${linkify(msg.text)}</span>`;
                     }
 
@@ -891,7 +893,7 @@
 
             container.scrollTop = container.scrollHeight;
 
-            // Rainbow chatroom effect only when ggjimbob is sent
+            // Rainbow chatroom effect only when new exact ggjimbob is sent
             if (hasGgjimbob) {
                 const chatroom = document.getElementById('chatroom');
                 chatroom.classList.add('rainbow-chatroom');
@@ -939,6 +941,7 @@
             isOwner = false;
             userRef = null;
             participants = [];
+            lastProcessedTimestamp = 0; // Reset on leave
         };
 
         window.closeChatroom = async () => {
@@ -958,6 +961,7 @@
                     isOwner = false;
                     userRef = null;
                     participants = [];
+                    lastProcessedTimestamp = 0;
                 }, 500);
             }
         };
