@@ -484,7 +484,45 @@
             { cmd: '/cal', desc: 'Calculate simple math - /cal 5 + 3 * 2' }
         ];
 
-        // ... (keep your existing modal functions: showCreateModal, hideCreateModal, etc.)
+        window.showCreateModal = () => {
+            if (!validateUsername()) return;
+            document.getElementById('createModal').classList.add('active');
+            document.getElementById('createCodeInput').value = generateCode();
+        };
+        window.hideCreateModal = () => document.getElementById('createModal').classList.remove('active');
+        window.showJoinModal = () => {
+            if (!validateUsername()) return;
+            document.getElementById('joinModal').classList.add('active');
+        };
+        window.hideJoinModal = () => document.getElementById('joinModal').classList.remove('active');
+        window.showEditModal = (messageId, currentText) => {
+            editingMessageId = messageId;
+            document.getElementById('editMessageInput').value = currentText;
+            document.getElementById('editModal').classList.add('active');
+        };
+        window.hideEditModal = () => {
+            document.getElementById('editModal').classList.remove('active');
+            editingMessageId = null;
+        };
+        window.saveEditedMessage = async () => {
+            if (!editingMessageId) return;
+            const newText = document.getElementById('editMessageInput').value.trim();
+            if (!newText) {
+                alert('Message cannot be empty.');
+                return;
+            }
+            const messageRef = ref(db, `chatrooms/${currentRoom}/messages/${editingMessageId}`);
+            const snapshot = await get(messageRef);
+            if (snapshot.exists()) {
+                const messageData = snapshot.val();
+                await set(messageRef, {
+                    ...messageData,
+                    text: newText,
+                    edited: true
+                });
+            }
+            hideEditModal();
+        };
 
         window.deleteOwnMessage = async (messageId, messageUser) => {
             if (messageUser !== currentUser && !isOwner) {
@@ -625,7 +663,6 @@
                                   : lang;
                     }
                 }
-                // Extract code after /code [lang]
                 const codeStart = message.indexOf(' ', 5) + 1 || message.indexOf(' ', 6) + 1;
                 contentToSend = message.substring(codeStart).trim();
             } else if (message.toLowerCase() === '.pull') {
@@ -827,7 +864,7 @@
                     // Check for ggjimbob (case-insensitive)
                     if (msg.text && msg.text.toLowerCase() === 'ggjimbob') {
                         hasGgjimbob = true;
-                        content.innerHTML = `${prefix}<span class="rainbow">${textWithLinks}</span>`;
+                        content.innerHTML = `${prefix}<span class="rainbow">${linkify(msg.text)}</span>`;
                     }
 
                     div.appendChild(content);
@@ -1021,6 +1058,10 @@
                 }
                 currentRoom = code;
                 currentUser = document.getElementById('usernameInput').value.trim();
+                if (!currentUser) {
+                    alert('Please enter a username!');
+                    return;
+                }
                 isOwner = true;
                 await set(roomRef, {
                     owner: currentUser,
@@ -1030,7 +1071,7 @@
                 hideCreateModal();
             } catch (error) {
                 console.error('Error creating chatroom:', error);
-                alert('Error creating chatroom: ' + error.message);
+                alert(`Failed to create chatroom: ${error.message}`);
             }
         };
 
@@ -1049,43 +1090,52 @@
                 }
                 currentRoom = code;
                 currentUser = document.getElementById('usernameInput').value.trim();
+                if (!currentUser) {
+                    alert('Please enter a username!');
+                    return;
+                }
                 isOwner = false;
                 joinRoom(code, false);
                 hideJoinModal();
             } catch (error) {
                 console.error('Error joining chatroom:', error);
-                alert('Error joining chatroom: ' + error.message);
+                alert(`Failed to join chatroom: ${error.message}`);
             }
         };
 
         async function joinRoom(code, owner) {
-            document.getElementById('mainMenu').style.display = 'none';
-            document.getElementById('chatroom').classList.add('active');
-            document.getElementById('roomCodeDisplay').textContent = `Room: ${code}`;
-            if (owner) {
-                document.getElementById('closeChatroomBtn').classList.remove('hidden');
+            try {
+                document.getElementById('mainMenu').style.display = 'none';
+                document.getElementById('chatroom').classList.add('active');
+                document.getElementById('roomCodeDisplay').textContent = `Room: ${code}`;
+                if (owner) {
+                    document.getElementById('closeChatroomBtn').classList.remove('hidden');
+                }
+
+                const participantsRef = ref(db, `chatrooms/${code}/participants`);
+                userRef = push(participantsRef);
+                await set(userRef, {
+                    name: currentUser,
+                    joined: Date.now()
+                });
+                onDisconnect(userRef).remove();
+
+                await sendSystemMessage(`${currentUser} joined`);
+
+                const messagesRef = ref(db, `chatrooms/${code}/messages`);
+                messagesListener = onValue(messagesRef, (snapshot) => {
+                    const messages = snapshot.val();
+                    displayMessages(messages);
+                });
+
+                onValue(participantsRef, (snapshot) => {
+                    const parts = snapshot.val() || {};
+                    participants = [...new Set(Object.values(parts).map(p => p.name))];
+                });
+            } catch (error) {
+                console.error('Error joining room:', error);
+                alert(`Error joining room: ${error.message}`);
             }
-
-            const participantsRef = ref(db, `chatrooms/${code}/participants`);
-            userRef = push(participantsRef);
-            await set(userRef, {
-                name: currentUser,
-                joined: Date.now()
-            });
-            onDisconnect(userRef).remove();
-
-            sendSystemMessage(`${currentUser} joined`);
-
-            const messagesRef = ref(db, `chatrooms/${code}/messages`);
-            messagesListener = onValue(messagesRef, (snapshot) => {
-                const messages = snapshot.val();
-                displayMessages(messages);
-            });
-
-            onValue(participantsRef, (snapshot) => {
-                const parts = snapshot.val() || {};
-                participants = [...new Set(Object.values(parts).map(p => p.name))];
-            });
         }
 
         function validateUsername() {
