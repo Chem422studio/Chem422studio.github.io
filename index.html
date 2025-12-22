@@ -271,16 +271,19 @@
             background: #1a1a1a;
             border: 1px solid #4a4a4a;
             border-radius: 5px;
-            padding: 10px;
+            padding: 0;
             margin-top: 10px;
-            max-width: 400px;
-            max-height: 300px;
-            overflow: auto;
+            width: 100%;
+            max-width: 500px;
+            height: 300px;
+            overflow: hidden;
         }
 
-        .html-preview * {
-            max-width: 100%;
-            word-wrap: break-word;
+        .html-preview iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 5px;
         }
 
         .autocomplete-dropdown {
@@ -466,12 +469,11 @@
         let editingMessageId = null;
 
         const commands = [
-            { cmd: '/color', desc: 'Change text color - /color [color] [text]' },
-            { cmd: '/color rainbow', desc: 'Rainbow text - /color rainbow [text]' },
-            { cmd: '/html', desc: 'Display HTML - /html [html code]' },
+            { cmd: '/color', desc: 'Change text color - /color [color] [text]', sub: ['red', 'blue', 'green', 'yellow', 'purple', 'orange', 'pink', 'cyan', 'white', 'rainbow'] },
+            { cmd: '/website', desc: 'Display website code - /website [html/css/js code]' },
             { cmd: '/pic', desc: 'Display image - /pic [image url]' },
-            { cmd: '/fonts', desc: 'Change font - /fonts [font] [text]' },
-            { cmd: '/rickroll', desc: 'Rickroll a user - /rickroll [username]' }
+            { cmd: '/fonts', desc: 'Change font - /fonts [font] [text]', sub: ['Arial', 'Comic Sans MS', 'Courier New', 'Georgia', 'Impact', 'Times New Roman', 'Trebuchet MS', 'Verdana', 'Brush Script MT', 'Palatino'] },
+            { cmd: '/cooleffect', desc: 'Activate a cool effect... 😎' }
         ];
 
         const availableFonts = [
@@ -689,15 +691,15 @@
             
             let color = null;
             let isRainbow = false;
-            let isHtml = false;
+            let isWebsite = false;
             let isImage = false;
             let font = null;
 
-            // Check for /rickroll command
-            if (message.startsWith('/rickroll ')) {
-                const targetUser = message.substring(10).trim();
+            // Check for /cooleffect command
+            if (message.toLowerCase() === '/cooleffect') {
+                // Rickroll the user who typed it
                 window.open('https://www.youtube.com/watch?v=dQw4w9WgXcQ', '_blank');
-                await sendSystemMessage(`${currentUser} attempted to rickroll ${targetUser} 🎵`);
+                await sendSystemMessage(`${currentUser} activated a cool effect! ✨`);
                 input.value = '';
                 return;
             }
@@ -707,10 +709,10 @@
                 isRainbow = true;
             }
 
-            // Check for /html command
-            if (message.startsWith('/html ')) {
-                isHtml = true;
-                message = message.substring(6);
+            // Check for /website command
+            if (message.startsWith('/website ')) {
+                isWebsite = true;
+                message = message.substring(9);
             }
 
             // Check for /pic command
@@ -757,7 +759,7 @@
                 owner: isOwner,
                 color: color,
                 rainbow: isRainbow,
-                html: isHtml,
+                website: isWebsite,
                 image: isImage,
                 font: font,
                 timestamp: Date.now()
@@ -812,9 +814,9 @@
                         content.style.fontFamily = msg.font;
                     }
 
-                    // Display HTML preview
-                    if (msg.html) {
-                        content.innerHTML = `${prefix}<br><div class="html-preview">${msg.text}</div>`;
+                    // Display website with iframe
+                    if (msg.website) {
+                        content.innerHTML = `${prefix}<br><div class="html-preview"><iframe srcdoc="${msg.text.replace(/"/g, '&quot;')}"></iframe></div>`;
                     }
                     // Display image with /pic command
                     else if (msg.image) {
