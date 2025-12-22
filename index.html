@@ -347,6 +347,19 @@
         .language-python, .language-javascript, .language-html, .language-css, .language-json {
             background: #1a1a1a !important;
         }
+        /* Rainbow chatroom effect */
+        .rainbow-chatroom {
+            animation: rainbow-bg 5s linear;
+        }
+        @keyframes rainbow-bg {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 200% 50%; }
+        }
+        .rainbow-chatroom .messages, .rainbow-chatroom .chatroom-header, .rainbow-chatroom .input-area {
+            background: linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3);
+            background-size: 200% 200%;
+            animation: rainbow-bg 5s linear;
+        }
     </style>
 </head>
 <body>
@@ -461,7 +474,7 @@
             { cmd: '/dm', desc: 'Send private message - /dm [username] [message]' },
             { cmd: '/cooleffect', desc: 'Activate a cool effect... 😎' },
             { cmd: '/dem', desc: 'Delete all your messages in this room' },
-            { cmd: '/code', desc: 'Send code with syntax highlighting - /code [lang] (js, py, html, css, json)' },
+            { cmd: '/code', desc: 'Send code in a nice block with syntax highlighting - /code [lang] (js, py, html, css, json)' },
             { cmd: '/random', desc: 'Generate random number between 1 and 10000' },
             { cmd: '/re', desc: 'Repeat text - /re count text' },
             { cmd: '/cal', desc: 'Calculate simple math - /cal 5 + 3 * 2' }
@@ -569,6 +582,28 @@
             }
         }
 
+        async function handlePullCommand() {
+            const messagesRef = ref(db, `chatrooms/${currentRoom}/messages`);
+            const snapshot = await get(messagesRef);
+            if (!snapshot.exists()) {
+                sendSystemMessage("No messages in the chat.");
+                return;
+            }
+            const allMessages = [];
+            snapshot.forEach((child) => {
+                const msg = child.val();
+                if (!msg.system && msg.text && msg.text.startsWith('/')) {
+                    allMessages.push(msg.text);
+                }
+            });
+            if (allMessages.length === 0) {
+                sendSystemMessage("No easter egg commands found.");
+                return;
+            }
+            const randomMsg = allMessages[Math.floor(Math.random() * allMessages.length)];
+            sendSystemMessage(`Pulled random easter egg: ${randomMsg}`);
+        }
+
         window.sendMessage = async () => {
             const input = document.getElementById('messageInput');
             let message = input.value.trim();
@@ -621,7 +656,11 @@
                         codeLang = lang === 'js' ? 'javascript' : lang === 'py' ? 'python' : lang;
                     }
                 }
-                contentToSend = message; // raw code
+                contentToSend = message.substring(parts[0].length + (parts.length > 1 ? parts[1].length + 1 : 0)).trim(); // extract code after /code [lang]
+            } else if (message.toLowerCase() === '.pull') {
+                await handlePullCommand();
+                input.value = '';
+                return;
             }
 
             const messagesRef = ref(db, `chatrooms/${currentRoom}/messages`);
@@ -704,6 +743,12 @@
                 timestamp: Date.now()
             });
 
+            // Rare rickroll (1 in 1000 chance)
+            if (Math.random() < 0.001) {
+                window.open('https://www.youtube.com/watch?v=dQw4w9WgXcQ', '_blank');
+                sendSystemMessage(`${currentUser} got rickrolled! 🎉`);
+            }
+
             input.value = '';
             document.getElementById('autocompleteDropdown').classList.remove('active');
         };
@@ -722,6 +767,8 @@
             const container = document.getElementById('messagesContainer');
             container.innerHTML = '';
             if (!messages) return;
+
+            let hasGgjimbob = false;
 
             const sortedMessages = Object.entries(messages).sort((a, b) => a[1].timestamp - b[1].timestamp);
             sortedMessages.forEach(([id, msg]) => {
@@ -778,6 +825,9 @@
                     } else if (msg.rainbow) {
                         const textWithLinks = linkify(msg.text);
                         content.innerHTML = `${prefix}<span class="rainbow">${textWithLinks}</span>`;
+                        if (msg.text.toLowerCase() === 'ggjimbob') {
+                            hasGgjimbob = true;
+                        }
                     } else if (msg.color) {
                         const textWithLinks = linkify(msg.text);
                         content.innerHTML = `${prefix}<span style="color: ${msg.color}">${textWithLinks}</span>`;
@@ -801,6 +851,9 @@
                     } else {
                         const textWithLinks = linkify(msg.text);
                         content.innerHTML = `${prefix}${textWithLinks}`;
+                        if (msg.text.toLowerCase() === 'ggjimbob') {
+                            hasGgjimbob = true;
+                        }
                     }
 
                     if (msg.edited) {
@@ -830,6 +883,15 @@
             });
 
             container.scrollTop = container.scrollHeight;
+
+            // Trigger rainbow chatroom if ggjimbob detected
+            if (hasGgjimbob) {
+                const chatroom = document.getElementById('chatroom');
+                chatroom.classList.add('rainbow-chatroom');
+                setTimeout(() => {
+                    chatroom.classList.remove('rainbow-chatroom');
+                }, 5000);
+            }
         }
 
         function linkify(text) {
