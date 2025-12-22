@@ -213,6 +213,20 @@
             border-left: 3px solid #5865f2;
         }
 
+        .rainbow {
+            background: linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: rainbow 3s linear infinite;
+        }
+
+        @keyframes rainbow {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 200% 50%; }
+        }
+
         .input-area {
             padding: 15px 20px;
             background: #3a3a3a;
@@ -296,7 +310,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, set, push, onValue, onDisconnect, remove, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, set, push, onValue, onDisconnect, remove, get, child } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBmq1EwejAgVQ37hUyLZpxG19AtxvAA74M",
@@ -338,51 +352,61 @@
         };
 
         window.createChatroom = async () => {
-            let code = document.getElementById('createCodeInput').value.trim();
-            if (!code) code = generateCode();
-            
-            const roomRef = ref(db, `chatrooms/${code}`);
-            const snapshot = await get(roomRef);
-            
-            if (snapshot.exists()) {
-                alert('This chatroom code already exists. Please choose another.');
-                return;
+            try {
+                let code = document.getElementById('createCodeInput').value.trim();
+                if (!code) code = generateCode();
+                
+                const roomRef = ref(db, `chatrooms/${code}`);
+                const snapshot = await get(roomRef);
+                
+                if (snapshot.exists()) {
+                    alert('This chatroom code already exists. Please choose another.');
+                    return;
+                }
+
+                currentRoom = code;
+                currentUser = document.getElementById('usernameInput').value.trim();
+                isOwner = true;
+
+                await set(roomRef, {
+                    owner: currentUser,
+                    created: Date.now()
+                });
+
+                joinRoom(code, true);
+                hideCreateModal();
+            } catch (error) {
+                console.error('Error creating chatroom:', error);
+                alert('Error creating chatroom: ' + error.message);
             }
-
-            currentRoom = code;
-            currentUser = document.getElementById('usernameInput').value.trim();
-            isOwner = true;
-
-            await set(roomRef, {
-                owner: currentUser,
-                created: Date.now()
-            });
-
-            joinRoom(code, true);
-            hideCreateModal();
         };
 
         window.joinChatroom = async () => {
-            const code = document.getElementById('joinCodeInput').value.trim();
-            if (!code) {
-                alert('Please enter a chatroom code.');
-                return;
+            try {
+                const code = document.getElementById('joinCodeInput').value.trim();
+                if (!code) {
+                    alert('Please enter a chatroom code.');
+                    return;
+                }
+
+                const roomRef = ref(db, `chatrooms/${code}`);
+                const snapshot = await get(roomRef);
+                
+                if (!snapshot.exists()) {
+                    alert('Chatroom does not exist.');
+                    return;
+                }
+
+                currentRoom = code;
+                currentUser = document.getElementById('usernameInput').value.trim();
+                isOwner = false;
+
+                joinRoom(code, false);
+                hideJoinModal();
+            } catch (error) {
+                console.error('Error joining chatroom:', error);
+                alert('Error joining chatroom: ' + error.message);
             }
-
-            const roomRef = ref(db, `chatrooms/${code}`);
-            const snapshot = await get(roomRef);
-            
-            if (!snapshot.exists()) {
-                alert('Chatroom does not exist.');
-                return;
-            }
-
-            currentRoom = code;
-            currentUser = document.getElementById('usernameInput').value.trim();
-            isOwner = false;
-
-            joinRoom(code, false);
-            hideJoinModal();
         };
 
         async function joinRoom(code, owner) {
@@ -423,18 +447,36 @@
 
         window.sendMessage = async () => {
             const input = document.getElementById('messageInput');
-            const message = input.value.trim();
+            let message = input.value.trim();
             
             if (!message) return;
 
             const messagesRef = ref(db, `chatrooms/${currentRoom}/messages`);
             const newMessageRef = push(messagesRef);
             
-            const prefix = isOwner ? 'owner' : '';
+            let color = null;
+            let isRainbow = false;
+
+            // Check for ggjimbob
+            if (message.toLowerCase() === 'ggjimbob') {
+                isRainbow = true;
+            }
+
+            // Check for /color command
+            if (message.startsWith('/color ')) {
+                const parts = message.substring(7).split(' ');
+                if (parts.length >= 2) {
+                    color = parts[0];
+                    message = parts.slice(1).join(' ');
+                }
+            }
+
             await set(newMessageRef, {
                 user: currentUser,
                 text: message,
                 owner: isOwner,
+                color: color,
+                rainbow: isRainbow,
                 timestamp: Date.now()
             });
 
@@ -472,9 +514,16 @@
                 } else {
                     if (msg.owner) {
                         div.classList.add('owner');
-                        div.textContent = `owner ${msg.user}: ${msg.text}`;
+                    }
+                    
+                    const prefix = msg.owner ? `owner ${msg.user}: ` : `${msg.user}: `;
+                    
+                    if (msg.rainbow) {
+                        div.innerHTML = `${prefix}<span class="rainbow">${msg.text}</span>`;
+                    } else if (msg.color) {
+                        div.innerHTML = `${prefix}<span style="color: ${msg.color}">${msg.text}</span>`;
                     } else {
-                        div.textContent = `${msg.user}: ${msg.text}`;
+                        div.textContent = `${prefix}${msg.text}`;
                     }
                 }
                 
@@ -508,23 +557,31 @@
         window.closeChatroom = async () => {
             if (!isOwner) return;
 
-            if (confirm('Are you sure you want to close this chatroom? This will remove all data.')) {
+            if (confirm('Are you sure you want to close this chatroom? This will remove all data and no one will be able to join.')) {
                 const roomRef = ref(db, `chatrooms/${currentRoom}`);
-                await remove(roomRef);
                 
-                if (messagesListener) {
-                    messagesListener();
-                }
+                // Send a closing message before deleting
+                await sendSystemMessage('Chatroom closed by owner');
+                
+                // Wait a moment for the message to be sent
+                setTimeout(async () => {
+                    // Delete the entire chatroom
+                    await remove(roomRef);
+                    
+                    if (messagesListener) {
+                        messagesListener();
+                    }
 
-                document.getElementById('chatroom').classList.remove('active');
-                document.getElementById('mainMenu').style.display = 'block';
-                document.getElementById('messagesContainer').innerHTML = '';
-                document.getElementById('closeChatroomBtn').classList.add('hidden');
-                
-                currentRoom = null;
-                currentUser = null;
-                isOwner = false;
-                userRef = null;
+                    document.getElementById('chatroom').classList.remove('active');
+                    document.getElementById('mainMenu').style.display = 'block';
+                    document.getElementById('messagesContainer').innerHTML = '';
+                    document.getElementById('closeChatroomBtn').classList.add('hidden');
+                    
+                    currentRoom = null;
+                    currentUser = null;
+                    isOwner = false;
+                    userRef = null;
+                }, 500);
             }
         };
 
