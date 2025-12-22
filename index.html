@@ -12,6 +12,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-html.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-css.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-json.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-nim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -344,10 +346,10 @@
             display: block;
             padding: 0;
         }
-        .language-python, .language-javascript, .language-html, .language-css, .language-json {
+        .language-python, .language-javascript, .language-html, .language-css, .language-json, .language-nim, .language-cpp {
             background: #1a1a1a !important;
         }
-        /* Rainbow chatroom effect */
+        /* Rainbow chatroom effect (only for ggjimbob) */
         .rainbow-chatroom {
             animation: rainbow-bg 5s linear;
         }
@@ -355,7 +357,9 @@
             0% { background-position: 0% 50%; }
             100% { background-position: 200% 50%; }
         }
-        .rainbow-chatroom .messages, .rainbow-chatroom .chatroom-header, .rainbow-chatroom .input-area {
+        .rainbow-chatroom .messages, 
+        .rainbow-chatroom .chatroom-header, 
+        .rainbow-chatroom .input-area {
             background: linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3);
             background-size: 200% 200%;
             animation: rainbow-bg 5s linear;
@@ -388,7 +392,7 @@
                 <div class="autocomplete-dropdown" id="autocompleteDropdown"></div>
                 <textarea
                     id="messageInput"
-                    placeholder="Type a message... (/code js, /code py, /random, /re 5 hi, Shift+Enter for new line)"
+                    placeholder="Type a message... (/code nim, /code cpp, /re 10000 hi, /random, Shift+Enter for new line)"
                     rows="3"
                     onkeydown="handleKeyPress(event)"
                     oninput="handleAutocomplete()"
@@ -474,51 +478,13 @@
             { cmd: '/dm', desc: 'Send private message - /dm [username] [message]' },
             { cmd: '/cooleffect', desc: 'Activate a cool effect... 😎' },
             { cmd: '/dem', desc: 'Delete all your messages in this room' },
-            { cmd: '/code', desc: 'Send code in a nice block with syntax highlighting - /code [lang] (js, py, html, css, json)' },
+            { cmd: '/code', desc: 'Send code with syntax highlighting - /code [lang] (js, py, html, css, json, nim, cpp)' },
             { cmd: '/random', desc: 'Generate random number between 1 and 10000' },
-            { cmd: '/re', desc: 'Repeat text - /re count text' },
+            { cmd: '/re', desc: 'Repeat text - /re count text (up to 10000)' },
             { cmd: '/cal', desc: 'Calculate simple math - /cal 5 + 3 * 2' }
         ];
 
-        window.showCreateModal = () => {
-            if (!validateUsername()) return;
-            document.getElementById('createModal').classList.add('active');
-            document.getElementById('createCodeInput').value = generateCode();
-        };
-        window.hideCreateModal = () => document.getElementById('createModal').classList.remove('active');
-        window.showJoinModal = () => {
-            if (!validateUsername()) return;
-            document.getElementById('joinModal').classList.add('active');
-        };
-        window.hideJoinModal = () => document.getElementById('joinModal').classList.remove('active');
-        window.showEditModal = (messageId, currentText) => {
-            editingMessageId = messageId;
-            document.getElementById('editMessageInput').value = currentText;
-            document.getElementById('editModal').classList.add('active');
-        };
-        window.hideEditModal = () => {
-            document.getElementById('editModal').classList.remove('active');
-            editingMessageId = null;
-        };
-        window.saveEditedMessage = async () => {
-            if (!editingMessageId) return;
-            const newText = document.getElementById('editMessageInput').value.trim();
-            if (!newText) {
-                alert('Message cannot be empty.');
-                return;
-            }
-            const messageRef = ref(db, `chatrooms/${currentRoom}/messages/${editingMessageId}`);
-            const snapshot = await get(messageRef);
-            if (snapshot.exists()) {
-                const messageData = snapshot.val();
-                await set(messageRef, {
-                    ...messageData,
-                    text: newText,
-                    edited: true
-                });
-            }
-            hideEditModal();
-        };
+        // ... (keep your existing modal functions: showCreateModal, hideCreateModal, etc.)
 
         window.deleteOwnMessage = async (messageId, messageUser) => {
             if (messageUser !== currentUser && !isOwner) {
@@ -560,13 +526,13 @@
 
         function handleRepeatCommand(args) {
             if (args.length < 2) {
-                alert("Usage: /re count text\nExample: /re 5 hi");
+                alert("Usage: /re count text\nExample: /re 10000 hi");
                 return null;
             }
             const count = parseInt(args[0]);
             const text = args.slice(1).join(' ');
-            if (isNaN(count) || count < 1 || count > 50) {
-                alert("Count must be between 1 and 50.");
+            if (isNaN(count) || count < 1 || count > 10000) {
+                alert("Count must be between 1 and 10000.");
                 return null;
             }
             return Array(count).fill(text).join(' ');
@@ -611,7 +577,7 @@
 
             let contentToSend = message;
             let isCode = false;
-            let codeLang = 'javascript'; // default
+            let codeLang = 'javascript';
             let isRandom = false;
             let isRepeat = false;
             let isCal = false;
@@ -652,11 +618,16 @@
                 const parts = message.split(/\s+/);
                 if (parts.length > 1) {
                     const lang = parts[1].toLowerCase();
-                    if (['js', 'javascript', 'py', 'python', 'html', 'css', 'json'].includes(lang)) {
-                        codeLang = lang === 'js' ? 'javascript' : lang === 'py' ? 'python' : lang;
+                    if (['js', 'javascript', 'py', 'python', 'html', 'css', 'json', 'nim', 'cpp', 'c++'].includes(lang)) {
+                        codeLang = lang === 'js' ? 'javascript' 
+                                  : lang === 'py' ? 'python' 
+                                  : lang === 'c++' ? 'cpp' 
+                                  : lang;
                     }
                 }
-                contentToSend = message.substring(parts[0].length + (parts.length > 1 ? parts[1].length + 1 : 0)).trim(); // extract code after /code [lang]
+                // Extract code after /code [lang]
+                const codeStart = message.indexOf(' ', 5) + 1 || message.indexOf(' ', 6) + 1;
+                contentToSend = message.substring(codeStart).trim();
             } else if (message.toLowerCase() === '.pull') {
                 await handlePullCommand();
                 input.value = '';
@@ -825,9 +796,6 @@
                     } else if (msg.rainbow) {
                         const textWithLinks = linkify(msg.text);
                         content.innerHTML = `${prefix}<span class="rainbow">${textWithLinks}</span>`;
-                        if (msg.text.toLowerCase() === 'ggjimbob') {
-                            hasGgjimbob = true;
-                        }
                     } else if (msg.color) {
                         const textWithLinks = linkify(msg.text);
                         content.innerHTML = `${prefix}<span style="color: ${msg.color}">${textWithLinks}</span>`;
@@ -846,18 +814,20 @@
                                 <code class="language-${langClass}">${escapedCode}</code>
                             </pre>
                         `;
-                        // Re-highlight after DOM insertion
                         setTimeout(() => Prism.highlightAllUnder(content), 100);
                     } else {
                         const textWithLinks = linkify(msg.text);
                         content.innerHTML = `${prefix}${textWithLinks}`;
-                        if (msg.text.toLowerCase() === 'ggjimbob') {
-                            hasGgjimbob = true;
-                        }
                     }
 
                     if (msg.edited) {
                         content.innerHTML += ' <span style="color: #999; font-size: 11px;">(edited)</span>';
+                    }
+
+                    // Check for ggjimbob (case-insensitive)
+                    if (msg.text && msg.text.toLowerCase() === 'ggjimbob') {
+                        hasGgjimbob = true;
+                        content.innerHTML = `${prefix}<span class="rainbow">${textWithLinks}</span>`;
                     }
 
                     div.appendChild(content);
@@ -884,7 +854,7 @@
 
             container.scrollTop = container.scrollHeight;
 
-            // Trigger rainbow chatroom if ggjimbob detected
+            // Rainbow chatroom effect only when ggjimbob is sent
             if (hasGgjimbob) {
                 const chatroom = document.getElementById('chatroom');
                 chatroom.classList.add('rainbow-chatroom');
