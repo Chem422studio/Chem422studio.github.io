@@ -21,8 +21,8 @@
         }
         .container {
             width: 100%;
-            max-width: 800px;
-            height: 600px;
+            max-width: 1200px;
+            height: 90vh;
             background: #2d2d2d;
             border-radius: 10px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
@@ -236,8 +236,8 @@
             padding: 0;
             margin-top: 10px;
             width: 100%;
-            max-width: 500px;
-            height: 300px;
+            max-width: 100%;
+            height: 500px;
             overflow: hidden;
             position: relative;
         }
@@ -279,11 +279,12 @@
             display: flex;
         }
         .fullscreen-content {
-            width: 90vw;
-            height: 90vh;
+            width: 95vw;
+            height: 95vh;
             background: white;
             border-radius: 10px;
             position: relative;
+            overflow: hidden;
         }
         .fullscreen-content iframe {
             width: 100%;
@@ -293,8 +294,8 @@
         }
         .close-fullscreen {
             position: absolute;
-            top: -40px;
-            right: 0;
+            bottom: 10px;
+            right: 10px;
             background: #ed4245;
             color: white;
             border: none;
@@ -302,6 +303,7 @@
             border-radius: 5px;
             cursor: pointer;
             font-size: 16px;
+            z-index: 11;
         }
         .close-fullscreen:hover {
             background: #c03537;
@@ -773,7 +775,7 @@
             const sortedMessages = Object.entries(messages).sort((a, b) => a[1].timestamp - b[1].timestamp);
             sortedMessages.forEach(([id, msg]) => {
                 if (msg.privateTo && currentUser !== msg.user && currentUser !== msg.privateTo) {
-                    return; // Skip if not sender or receiver
+                    return;
                 }
                 const div = document.createElement('div');
                 div.className = 'message';
@@ -793,12 +795,18 @@
                     content.className = 'message-content';
                     if (msg.font) content.style.fontFamily = msg.font;
                     if (msg.website) {
-                        const escapedText = msg.text.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+                        const escapedText = msg.text
+                            .replace(/&/g, '&amp;')
+                            .replace(/"/g, '&quot;')
+                            .replace(/'/g, '&#39;')
+                            .replace(/</g, '&lt;')
+                            .replace(/>/g, '&gt;')
+                            .replace(/\\/g, '\\\\');
                         content.innerHTML = `
                             ${prefix}<br>
                             <div class="html-preview">
                                 <iframe 
-                                    sandbox="allow-scripts allow-same-origin allow-popups allow-forms" 
+                                    sandbox="allow-scripts allow-popups allow-forms allow-modals allow-top-navigation-by-user-activation" 
                                     srcdoc="${escapedText}"
                                 ></iframe>
                                 <button class="fullscreen-btn" onclick="openFullscreen(this.parentNode)">Fullscreen</button>
@@ -869,7 +877,7 @@
             const content = document.getElementById('fullscreenContent');
             content.innerHTML = `
                 <iframe 
-                    sandbox="allow-scripts allow-same-origin allow-popups allow-forms" 
+                    sandbox="allow-scripts allow-popups allow-forms allow-modals allow-top-navigation-by-user-activation" 
                     srcdoc="${srcdoc}"
                 ></iframe>
             `;
