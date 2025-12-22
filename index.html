@@ -273,9 +273,52 @@
             border-radius: 5px;
             padding: 10px;
             margin-top: 10px;
-            max-width: 500px;
-            max-height: 400px;
+            max-width: 400px;
+            max-height: 300px;
             overflow: auto;
+        }
+
+        .html-preview * {
+            max-width: 100%;
+            word-wrap: break-word;
+        }
+
+        .autocomplete-dropdown {
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            right: 0;
+            background: #3a3a3a;
+            border: 1px solid #4a4a4a;
+            border-radius: 5px 5px 0 0;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+            z-index: 100;
+        }
+
+        .autocomplete-dropdown.active {
+            display: block;
+        }
+
+        .autocomplete-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #2a2a2a;
+        }
+
+        .autocomplete-item:hover {
+            background: #4a4a4a;
+        }
+
+        .autocomplete-item .command {
+            color: #5865f2;
+            font-weight: bold;
+        }
+
+        .autocomplete-item .description {
+            color: #999;
+            font-size: 12px;
         }
 
         .message.server {
