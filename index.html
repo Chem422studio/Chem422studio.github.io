@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Chatroom</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a1a;
+            color: #ffffff;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            height: 600px;
+            background: #2d2d2d;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            padding: 20px;
+            background: #3a3a3a;
+            border-radius: 10px 10px 0 0;
+            border-bottom: 2px solid #4a4a4a;
+        }
+
+        .header input {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            background: #4a4a4a;
+            color: #ffffff;
+            font-size: 16px;
+        }
+
+        .header input::placeholder {
+            color: #999;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            padding: 40px;
+        }
+
+        .btn {
+            padding: 15px 40px;
+            font-size: 18px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background: #5865f2;
+            color: white;
+            transition: background 0.3s;
+            min-width: 200px;
+        }
+
+        .btn:hover {
+            background: #4752c4;
+        }
+
+        .btn-danger {
+            background: #ed4245;
+        }
+
+        .btn-danger:hover {
+            background: #c03537;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #2d2d2d;
+            padding: 30px;
+            border-radius: 10px;
+            min-width: 400px;
+        }
+
+        .modal-content h2 {
+            margin-bottom: 20px;
+            color: #5865f2;
+        }
+
+        .modal-content input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: none;
+            border-radius: 5px;
+            background: #4a4a4a;
+            color: #ffffff;
+            font-size: 16px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .modal-buttons button {
+            padding: 10px 20px;
+        }
+
+        .chatroom {
+            display: none;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .chatroom.active {
+            display: flex;
+        }
+
+        .chatroom-header {
+            padding: 15px 20px;
+            background: #3a3a3a;
+            border-bottom: 2px solid #4a4a4a;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chatroom-header .left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .back-btn {
+            padding: 8px 15px;
+            background: #4a4a4a;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+        }
+
+        .back-btn:hover {
+            background: #5a5a5a;
+        }
+
+        .room-code {
+            padding: 8px 15px;
+            background: #4a4a4a;
+            border-radius: 5px;
+            cursor: pointer;
+            user-select: all;
+        }
+
+        .room-code:hover {
+            background: #5a5a5a;
+        }
+
+        .messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .message {
+            padding: 10px 15px;
+            background: #3a3a3a;
+            border-radius: 5px;
+            word-wrap: break-word;
+        }
+
+        .message.server {
+            background: #4a4a4a;
+            color: #999;
+            font-style: italic;
+        }
+
+        .message.owner {
+            border-left: 3px solid #5865f2;
+        }
+
+        .input-area {
+            padding: 15px 20px;
+            background: #3a3a3a;
+            border-top: 2px solid #4a4a4a;
+            display: flex;
+            gap: 10px;
+        }
+
+        .input-area input {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            background: #4a4a4a;
+            color: #ffffff;
+            font-size: 16px;
+        }
+
+        .input-area button {
+            padding: 12px 25px;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Main Menu -->
+        <div id="mainMenu">
+            <div class="header">
+                <input type="text" id="usernameInput" placeholder="Enter your name">
+            </div>
+            <div class="main-content">
+                <button class="btn" onclick="showCreateModal()">Start Chatroom</button>
+                <button class="btn" onclick="showJoinModal()">Join Chatroom</button>
+            </div>
+        </div>
+
+        <!-- Chatroom -->
+        <div id="chatroom" class="chatroom">
+            <div class="chatroom-header">
+                <div class="left">
+                    <button class="back-btn" onclick="leaveChatroom()">← Back</button>
+                    <div class="room-code" id="roomCodeDisplay" onclick="copyCode()">Room: </div>
+                </div>
+                <button id="closeChatroomBtn" class="btn btn-danger hidden" onclick="closeChatroom()">Close Chatroom</button>
+            </div>
+            <div class="messages" id="messagesContainer"></div>
+            <div class="input-area">
+                <input type="text" id="messageInput" placeholder="Type a message..." onkeypress="handleKeyPress(event)">
+                <button class="btn" onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Chatroom Modal -->
+    <div id="createModal" class="modal">
+        <div class="modal-content">
+            <h2>Create Chatroom</h2>
+            <input type="text" id="createCodeInput" placeholder="Chatroom code (leave blank for auto-gen)">
+            <div class="modal-buttons">
+                <button class="btn" style="background: #4a4a4a;" onclick="hideCreateModal()">Cancel</button>
+                <button class="btn" onclick="createChatroom()">Create</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Join Chatroom Modal -->
+    <div id="joinModal" class="modal">
+        <div class="modal-content">
+            <h2>Join Chatroom</h2>
+            <input type="text" id="joinCodeInput" placeholder="Enter chatroom code">
+            <div class="modal-buttons">
+                <button class="btn" style="background: #4a4a4a;" onclick="hideJoinModal()">Cancel</button>
+                <button class="btn" onclick="joinChatroom()">Join</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, set, push, onValue, onDisconnect, remove, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBmq1EwejAgVQ37hUyLZpxG19AtxvAA74M",
+            authDomain: "ggjimbob-2f0f7.firebaseapp.com",
+            databaseURL: "https://ggjimbob-2f0f7-default-rtdb.firebaseio.com",
+            projectId: "ggjimbob-2f0f7",
+            storageBucket: "ggjimbob-2f0f7.firebasestorage.app",
+            messagingSenderId: "75510860344",
+            appId: "1:75510860344:web:a63313536e73eb6239b4cd",
+            measurementId: "G-1P46LYPC4J"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        let currentRoom = null;
+        let currentUser = null;
+        let isOwner = false;
+        let userRef = null;
+        let messagesListener = null;
+
+        window.showCreateModal = () => {
+            if (!validateUsername()) return;
+            document.getElementById('createModal').classList.add('active');
+            document.getElementById('createCodeInput').value = generateCode();
+        };
+
+        window.hideCreateModal = () => {
+            document.getElementById('createModal').classList.remove('active');
+        };
+
+        window.showJoinModal = () => {
+            if (!validateUsername()) return;
+            document.getElementById('joinModal').classList.add('active');
+        };
+
+        window.hideJoinModal = () => {
+            document.getElementById('joinModal').classList.remove('active');
+        };
+
+        window.createChatroom = async () => {
+            let code = document.getElementById('createCodeInput').value.trim();
+            if (!code) code = generateCode();
+            
+            const roomRef = ref(db, `chatrooms/${code}`);
+            const snapshot = await get(roomRef);
+            
+            if (snapshot.exists()) {
+                alert('This chatroom code already exists. Please choose another.');
+                return;
+            }
+
+            currentRoom = code;
+            currentUser = document.getElementById('usernameInput').value.trim();
+            isOwner = true;
+
+            await set(roomRef, {
+                owner: currentUser,
+                created: Date.now()
+            });
+
+            joinRoom(code, true);
+            hideCreateModal();
+        };
+
+        window.joinChatroom = async () => {
+            const code = document.getElementById('joinCodeInput').value.trim();
+            if (!code) {
+                alert('Please enter a chatroom code.');
+                return;
+            }
+
+            const roomRef = ref(db, `chatrooms/${code}`);
+            const snapshot = await get(roomRef);
+            
+            if (!snapshot.exists()) {
+                alert('Chatroom does not exist.');
+                return;
+            }
+
+            currentRoom = code;
+            currentUser = document.getElementById('usernameInput').value.trim();
+            isOwner = false;
+
+            joinRoom(code, false);
+            hideJoinModal();
+        };
+
+        async function joinRoom(code, owner) {
+            document.getElementById('mainMenu').style.display = 'none';
+            document.getElementById('chatroom').classList.add('active');
+            document.getElementById('roomCodeDisplay').textContent = `Room: ${code}`;
+            
+            if (owner) {
+                document.getElementById('closeChatroomBtn').classList.remove('hidden');
+            }
+
+            // Add user to participants
+            const participantsRef = ref(db, `chatrooms/${code}/participants`);
+            userRef = push(participantsRef);
+            await set(userRef, {
+                name: currentUser,
+                joined: Date.now()
+            });
+
+            // Set up disconnect handler
+            onDisconnect(userRef).remove();
+
+            // Send join message
+            sendSystemMessage(`${currentUser} joined`);
+
+            // Listen for messages
+            const messagesRef = ref(db, `chatrooms/${code}/messages`);
+            messagesListener = onValue(messagesRef, (snapshot) => {
+                const messages = snapshot.val();
+                displayMessages(messages);
+            });
+
+            // Listen for participants leaving
+            onValue(participantsRef, (snapshot) => {
+                // This will trigger when participants change
+            });
+        }
+
+        window.sendMessage = async () => {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+
+            const messagesRef = ref(db, `chatrooms/${currentRoom}/messages`);
+            const newMessageRef = push(messagesRef);
+            
+            const prefix = isOwner ? 'owner' : '';
+            await set(newMessageRef, {
+                user: currentUser,
+                text: message,
+                owner: isOwner,
+                timestamp: Date.now()
+            });
+
+            input.value = '';
+        };
+
+        async function sendSystemMessage(text) {
+            const messagesRef = ref(db, `chatrooms/${currentRoom}/messages`);
+            const newMessageRef = push(messagesRef);
+            
+            await set(newMessageRef, {
+                system: true,
+                text: text,
+                timestamp: Date.now()
+            });
+        }
+
+        function displayMessages(messages) {
+            const container = document.getElementById('messagesContainer');
+            container.innerHTML = '';
+
+            if (!messages) return;
+
+            const sortedMessages = Object.entries(messages).sort((a, b) => 
+                a[1].timestamp - b[1].timestamp
+            );
+
+            sortedMessages.forEach(([id, msg]) => {
+                const div = document.createElement('div');
+                div.className = 'message';
+                
+                if (msg.system) {
+                    div.classList.add('server');
+                    div.textContent = `server: ${msg.text}`;
+                } else {
+                    if (msg.owner) {
+                        div.classList.add('owner');
+                        div.textContent = `owner ${msg.user}: ${msg.text}`;
+                    } else {
+                        div.textContent = `${msg.user}: ${msg.text}`;
+                    }
+                }
+                
+                container.appendChild(div);
+            });
+
+            container.scrollTop = container.scrollHeight;
+        }
+
+        window.leaveChatroom = async () => {
+            if (userRef) {
+                await sendSystemMessage(`${currentUser} left`);
+                await remove(userRef);
+            }
+
+            if (messagesListener) {
+                messagesListener();
+            }
+
+            document.getElementById('chatroom').classList.remove('active');
+            document.getElementById('mainMenu').style.display = 'block';
+            document.getElementById('messagesContainer').innerHTML = '';
+            document.getElementById('closeChatroomBtn').classList.add('hidden');
+            
+            currentRoom = null;
+            currentUser = null;
+            isOwner = false;
+            userRef = null;
+        };
+
+        window.closeChatroom = async () => {
+            if (!isOwner) return;
+
+            if (confirm('Are you sure you want to close this chatroom? This will remove all data.')) {
+                const roomRef = ref(db, `chatrooms/${currentRoom}`);
+                await remove(roomRef);
+                
+                if (messagesListener) {
+                    messagesListener();
+                }
+
+                document.getElementById('chatroom').classList.remove('active');
+                document.getElementById('mainMenu').style.display = 'block';
+                document.getElementById('messagesContainer').innerHTML = '';
+                document.getElementById('closeChatroomBtn').classList.add('hidden');
+                
+                currentRoom = null;
+                currentUser = null;
+                isOwner = false;
+                userRef = null;
+            }
+        };
+
+        window.copyCode = () => {
+            navigator.clipboard.writeText(currentRoom);
+            alert('Room code copied to clipboard!');
+        };
+
+        window.handleKeyPress = (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        };
+
+        function validateUsername() {
+            const username = document.getElementById('usernameInput').value.trim();
+            if (!username) {
+                alert('Please enter your name first.');
+                return false;
+            }
+            return true;
+        }
+
+        function generateCode() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let code = '';
+            for (let i = 0; i < 6; i++) {
+                code += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return code;
+        }
+    </script>
+</body>
+</html>
