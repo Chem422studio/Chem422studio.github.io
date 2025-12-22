@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Firebase Chatroom</title>
-    <!-- Prism.js for syntax highlighting -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-okaidia.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
@@ -34,6 +33,7 @@
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
             display: flex;
             flex-direction: column;
+            position: relative;
         }
         .header {
             padding: 20px;
@@ -107,7 +107,6 @@
         .modal-buttons { display: flex; gap: 10px; justify-content: flex-end; }
         .modal-buttons button { padding: 10px 20px; }
         .chatroom { display: none; flex-direction: column; height: 100%; }
-        .chatroom.active { display: flex; }
         .chatroom-header {
             padding: 15px 20px;
             background: #3a3a3a;
@@ -317,56 +316,152 @@
             font-family: 'Segoe UI', sans-serif;
         }
         .input-area button { padding: 12px 25px; }
-        .hidden { display: none; }
-        /* Enhanced code block styling with Prism */
-        pre.code-block {
-            background: #1a1a1a;
-            padding: 12px;
-            border-radius: 5px;
-            position: relative;
-            margin-top: 8px;
-            overflow-x: auto;
-            font-family: 'Courier New', monospace;
+        .hidden { display: none !important; }
+        /* Fire effect */
+        .fire-effect {
+            animation: fire 3s infinite;
+            background: linear-gradient(45deg, #ff0000, #ff4500, #ff8c00);
+            background-size: 200% 200%;
+            box-shadow: 0 0 15px #ff4500;
         }
-        pre.code-block button {
-            position: absolute;
-            top: 6px;
-            right: 6px;
-            background: #5865f2;
-            color: white;
-            border: none;
-            padding: 4px 8px;
-            border-radius: 3px;
-            cursor: pointer;
-            font-size: 12px;
-            z-index: 5;
-        }
-        pre.code-block button:hover { background: #4752c4; }
-        pre.code-block code {
-            display: block;
-            padding: 0;
-        }
-        .language-python, .language-javascript, .language-html, .language-css, .language-json, .language-nim, .language-cpp {
-            background: #1a1a1a !important;
-        }
-        /* Rainbow chatroom effect (only for exact ggjimbob) */
-        .rainbow-chatroom {
-            animation: rainbow-bg 5s linear;
-        }
-        @keyframes rainbow-bg {
+        @keyframes fire {
             0% { background-position: 0% 50%; }
-            100% { background-position: 200% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
-        .rainbow-chatroom .messages, 
-        .rainbow-chatroom .chatroom-header, 
-        .rainbow-chatroom .input-area {
+        /* Shake effect */
+        .caps-shake {
+            animation: shake 3s linear;
+        }
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(-1deg); }
+            50% { transform: translate(-1px, 2px) rotate(1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(3px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            90% { transform: translate(1px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
+        /* Rainbow chatroom effect */
+        .rainbow-chatroom {
             background: linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3);
             background-size: 200% 200%;
-            animation: rainbow-bg 5s linear;
+            animation: rainbow 3s linear infinite;
+        }
+        /* Matrix Donut Overlay */
+        .matrix-donut {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #000;
+            color: #0f0;
+            font-family: monospace;
+            font-size: 16px;
+            white-space: pre;
+            z-index: 9999;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+        /* Dev Mode Pic Overlay */
+        .dev-pic-overlay {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 400px;
+            height: 400px;
+            background: url('https://th.bing.com/th/id/R.d3d3638d1c412496800e862891263ad3?rik=G5Zq2PUgEST2gQ&pid=ImgRaw&r=0') center/cover;
+            border-radius: 50%;
+            box-shadow: 0 0 50px #fff;
+            z-index: 10000;
+            display: none;
+            animation: fadeInOut 6s forwards;
+        }
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: scale(0.5); }
+            10% { opacity: 1; transform: scale(1); }
+            90% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0; transform: scale(1.5); }
+        }
+        /* Voice Chat Sidebar */
+        .voice-sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 280px;
+            height: 100vh;
+            background: #2d2d2d;
+            border-right: 2px solid #4a4a4a;
+            padding: 20px;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.5);
+            z-index: 500;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            color: white;
+        }
+        .voice-sidebar.hidden { display: none; }
+        .voice-header {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .voice-header h3 {
+            color: #5865f2;
+            margin: 0;
+        }
+        #vcTitle {
+            font-size: 16px;
+            color: #bbb;
+        }
+        .voice-controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .voice-users {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px 0;
+        }
+        .voice-user {
+            padding: 8px 12px;
+            background: #3a3a3a;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .voice-user .mic {
+            color: #00ff00;
+            font-size: 18px;
         }
     </style>
 </head>
 <body>
+    <!-- Voice Chat Sidebar -->
+    <div id="voiceChatSidebar" class="voice-sidebar hidden">
+        <div class="voice-header">
+            <h3>Voice Chat</h3>
+            <span id="vcTitle">No active voice chat</span>
+        </div>
+        <div class="voice-controls">
+            <button id="joinVcBtn" class="btn hidden" onclick="joinVoiceChat()">Join Voice Chat</button>
+            <button id="leaveVcBtn" class="btn btn-danger hidden" onclick="leaveVoiceChat()">Leave Voice Chat</button>
+        </div>
+        <div class="voice-users" id="voiceUsersList">
+            <!-- Users in VC -->
+        </div>
+    </div>
+
     <div class="container">
         <!-- Main Menu -->
         <div id="mainMenu">
@@ -374,12 +469,12 @@
                 <input type="text" id="usernameInput" placeholder="Enter your name">
             </div>
             <div class="main-content">
-                <button class="btn" onclick="showCreateModal()">Start Chatroom</button>
-                <button class="btn" onclick="showJoinModal()">Join Chatroom</button>
+                <button class="btn" id="startBtn">Start Chatroom</button>
+                <button class="btn" id="joinBtn">Join Chatroom</button>
             </div>
         </div>
         <!-- Chatroom -->
-        <div id="chatroom" class="chatroom">
+        <div id="chatroom" class="chatroom" style="display: none;">
             <div class="chatroom-header">
                 <div class="left">
                     <button class="back-btn" onclick="leaveChatroom()">← Back</button>
@@ -388,11 +483,11 @@
                 <button id="closeChatroomBtn" class="btn btn-danger hidden" onclick="closeChatroom()">Close Chatroom</button>
             </div>
             <div class="messages" id="messagesContainer"></div>
-            <div class="input-area">
+            <div class="input-area" id="inputArea">
                 <div class="autocomplete-dropdown" id="autocompleteDropdown"></div>
                 <textarea
                     id="messageInput"
-                    placeholder="Type a message... (/code nim, /code cpp, /re 10000 hi, /random, Shift+Enter for new line)"
+                    placeholder="Type a message... (/code nim, /vc name, /matrix, Shift+Enter for new line)"
                     rows="3"
                     onkeydown="handleKeyPress(event)"
                     oninput="handleAutocomplete()"
@@ -402,43 +497,42 @@
         </div>
     </div>
 
-    <!-- Create Chatroom Modal -->
+    <!-- Matrix Donut Overlay -->
+    <div id="matrixDonut" class="matrix-donut"></div>
+    <!-- Dev Mode Pic Overlay -->
+    <div id="devPicOverlay" class="dev-pic-overlay"></div>
+
+    <!-- Modals -->
     <div id="createModal" class="modal">
         <div class="modal-content">
             <h2>Create Chatroom</h2>
             <input type="text" id="createCodeInput" placeholder="Chatroom code (leave blank for auto-gen)">
             <div class="modal-buttons">
-                <button class="btn" style="background: #4a4a4a;" onclick="hideCreateModal()">Cancel</button>
+                <button class="btn" style="background: #4a4a4a;" onclick="closeCreateModal()">Cancel</button>
                 <button class="btn" onclick="createChatroom()">Create</button>
             </div>
         </div>
     </div>
-
-    <!-- Join Chatroom Modal -->
     <div id="joinModal" class="modal">
         <div class="modal-content">
             <h2>Join Chatroom</h2>
             <input type="text" id="joinCodeInput" placeholder="Enter chatroom code">
             <div class="modal-buttons">
-                <button class="btn" style="background: #4a4a4a;" onclick="hideJoinModal()">Cancel</button>
+                <button class="btn" style="background: #4a4a4a;" onclick="closeJoinModal()">Cancel</button>
                 <button class="btn" onclick="joinChatroom()">Join</button>
             </div>
         </div>
     </div>
-
-    <!-- Edit Message Modal -->
     <div id="editModal" class="modal">
         <div class="modal-content">
             <h2>Edit Message</h2>
             <input type="text" id="editMessageInput" placeholder="Edit message text">
             <div class="modal-buttons">
-                <button class="btn" style="background: #4a4a4a;" onclick="hideEditModal()">Cancel</button>
+                <button class="btn" style="background: #4a4a4a;" onclick="closeEditModal()">Cancel</button>
                 <button class="btn" onclick="saveEditedMessage()">Save</button>
             </div>
         </div>
     </div>
-
-    <!-- Fullscreen Overlay -->
     <div class="fullscreen-overlay" id="fullscreenOverlay">
         <div class="fullscreen-content" id="fullscreenContent"></div>
         <button class="close-fullscreen" onclick="closeFullscreen()">Close</button>
@@ -469,146 +563,209 @@
         let messagesListener = null;
         let editingMessageId = null;
         let participants = [];
-        let lastProcessedTimestamp = 0; // Track the latest timestamp we've processed
+        let processedEffects = new Set();
+        let currentVoiceChat = null;
+        let isInVoiceChat = false;
 
         const commands = [
-            { cmd: '/color', desc: 'Change text color - /color [color] [text]', sub: ['red', 'blue', 'green', 'yellow', 'purple', 'orange', 'pink', 'cyan', 'white', 'rainbow'] },
-            { cmd: '/website', desc: 'Display website code - /website [html/css/js code]' },
-            { cmd: '/pic', desc: 'Display image - /pic [image url]' },
-            { cmd: '/fonts', desc: 'Change font - /fonts [font] [text]', sub: ['Arial', 'Comic Sans MS', 'Courier New', 'Georgia', 'Impact', 'Times New Roman', 'Trebuchet MS', 'Verdana', 'Brush Script MT', 'Palatino'] },
-            { cmd: '/dm', desc: 'Send private message - /dm [username] [message]' },
-            { cmd: '/cooleffect', desc: 'Activate a cool effect... 😎' },
-            { cmd: '/dem', desc: 'Delete all your messages in this room' },
-            { cmd: '/code', desc: 'Send code with syntax highlighting - /code [lang] (js, py, html, css, json, nim, cpp)' },
-            { cmd: '/random', desc: 'Generate random number between 1 and 10000' },
-            { cmd: '/re', desc: 'Repeat text - /re count text (up to 10000)' },
-            { cmd: '/cal', desc: 'Calculate simple math - /cal 5 + 3 * 2' }
+            { cmd: '/color', desc: 'Change text color', sub: ['red', 'blue', 'green', 'yellow', 'purple', 'orange', 'rainbow'] },
+            { cmd: '/website', desc: 'Display website code' },
+            { cmd: '/pic', desc: 'Display image' },
+            { cmd: '/fonts', desc: 'Change font', sub: ['Arial', 'Courier', 'Georgia', 'Times New Roman', 'Verdana', 'Comic Sans MS'] },
+            { cmd: '/dm', desc: 'Send private message' },
+            { cmd: '/cooleffect', desc: 'Activate cool effect' },
+            { cmd: '/dem', desc: 'Delete all your messages' },
+            { cmd: '/code', desc: 'Send code with highlighting', sub: ['js', 'python', 'html', 'css', 'json', 'nim', 'cpp'] },
+            { cmd: '/random', desc: 'Random number 1-10000' },
+            { cmd: '/re', desc: 'Repeat text' },
+            { cmd: '/cal', desc: 'Calculate math' },
+            { cmd: '/matrix', desc: 'Show spinning donut' },
+            { cmd: '/vc', desc: 'Start voice chat' }
         ];
 
-        window.showCreateModal = () => {
-            if (!validateUsername()) return;
-            document.getElementById('createModal').classList.add('active');
-            document.getElementById('createCodeInput').value = generateCode();
-        };
-        window.hideCreateModal = () => document.getElementById('createModal').classList.remove('active');
-        window.showJoinModal = () => {
-            if (!validateUsername()) return;
-            document.getElementById('joinModal').classList.add('active');
-        };
-        window.hideJoinModal = () => document.getElementById('joinModal').classList.remove('active');
-        window.showEditModal = (messageId, currentText) => {
-            editingMessageId = messageId;
-            document.getElementById('editMessageInput').value = currentText;
-            document.getElementById('editModal').classList.add('active');
-        };
-        window.hideEditModal = () => {
-            document.getElementById('editModal').classList.remove('active');
-            editingMessageId = null;
-        };
-        window.saveEditedMessage = async () => {
-            if (!editingMessageId) return;
-            const newText = document.getElementById('editMessageInput').value.trim();
-            if (!newText) {
-                alert('Message cannot be empty.');
-                return;
-            }
-            const messageRef = ref(db, `chatrooms/${currentRoom}/messages/${editingMessageId}`);
-            const snapshot = await get(messageRef);
-            if (snapshot.exists()) {
-                const messageData = snapshot.val();
-                await set(messageRef, {
-                    ...messageData,
-                    text: newText,
-                    edited: true
-                });
-            }
-            hideEditModal();
-        };
-
-        window.deleteOwnMessage = async (messageId, messageUser) => {
-            if (messageUser !== currentUser && !isOwner) {
-                alert("You can only delete your own messages.");
-                return;
-            }
-            if (confirm('Are you sure you want to delete this message?')) {
-                await remove(ref(db, `chatrooms/${currentRoom}/messages/${messageId}`));
-            }
-        };
-
-        async function handleDemCommand() {
-            if (!confirm('Are you sure you want to delete ALL your messages in this room? This cannot be undone.')) return;
-            const messagesRef = ref(db, `chatrooms/${currentRoom}/messages`);
-            const snapshot = await get(messagesRef);
-            if (!snapshot.exists()) {
-                sendSystemMessage("No messages found to delete.");
-                return;
-            }
-            const updates = {};
-            snapshot.forEach((child) => {
-                const msg = child.val();
-                if (msg.user === currentUser && !msg.system) {
-                    updates[child.key] = null;
+        // Matrix Donut
+        function showMatrixDonut() {
+            const donut = document.getElementById('matrixDonut');
+            donut.style.display = 'flex';
+            let A = 0, B = 0;
+            const chars = '.,-~:;=!*#$@';
+            const width = 80, height = 22;
+            const interval = setInterval(() => {
+                const b = new Array(width * height).fill(' ');
+                const z = new Array(width * height).fill(0);
+                for (let j = 0; j < 6.28; j += 0.07) {
+                    const ct = Math.cos(j), st = Math.sin(j);
+                    for (let i = 0; i < 6.28; i += 0.02) {
+                        const sp = Math.sin(i), cp = Math.cos(i);
+                        const h = ct + 2;
+                        const D = 1 / (sp * h * Math.sin(A) + st * Math.cos(A) + 5);
+                        const t = sp * h * Math.cos(A) - st * Math.sin(A);
+                        const x = Math.floor(width / 2 + (width / 2) * D * (cp * h * Math.cos(B) + t * Math.sin(B)));
+                        const y = Math.floor(height / 2 + (height / 2) * D * (cp * h * Math.sin(B) - t * Math.cos(B)));
+                        const o = x + width * y;
+                        const N = 8 * ((st * Math.sin(A) - sp * ct * Math.cos(A)) * Math.cos(B) - sp * ct * Math.sin(A) - st * Math.cos(A) - cp * ct * Math.sin(B));
+                        if (y >= 0 && y < height && x >= 0 && x < width && D > z[o]) {
+                            z[o] = D;
+                            b[o] = chars[N > 0 ? Math.floor(N) : 0];
+                        }
+                    }
                 }
-            });
-            if (Object.keys(updates).length === 0) {
-                sendSystemMessage("You have no messages to delete.");
-            } else {
-                await update(messagesRef, updates);
-                sendSystemMessage(`${currentUser} deleted all their messages.`);
+                let output = '';
+                for (let k = 0; k < b.length; k++) {
+                    output += b[k];
+                    if (k % width === width - 1) output += '\n';
+                }
+                donut.innerText = output;
+                A += 0.04;
+                B += 0.02;
+            }, 50);
+            setTimeout(() => {
+                clearInterval(interval);
+                donut.style.display = 'none';
+                donut.innerText = '';
+            }, 7000);
+        }
+
+        // Effects
+        function triggerFire() {
+            const chatroom = document.getElementById('chatroom');
+            chatroom.classList.add('fire-effect');
+            setTimeout(() => chatroom.classList.remove('fire-effect'), 9000);
+        }
+
+        function triggerShake() {
+            const chatroom = document.getElementById('chatroom');
+            chatroom.classList.add('caps-shake');
+            setTimeout(() => chatroom.classList.remove('caps-shake'), 3000);
+        }
+
+        function triggerRainbow() {
+            const chatroom = document.getElementById('chatroom');
+            chatroom.classList.add('rainbow-chatroom');
+            setTimeout(() => chatroom.classList.remove('rainbow-chatroom'), 5000);
+        }
+
+        function showDevPic(username) {
+            if (currentUser.toLowerCase() === username.toLowerCase()) {
+                const overlay = document.getElementById('devPicOverlay');
+                overlay.style.display = 'block';
+                setTimeout(() => overlay.style.display = 'none', 6000);
             }
         }
 
+        // Command Handlers
         function handleRandomCommand() {
-            const random = Math.floor(Math.random() * 10000) + 1;
-            return random.toString();
+            return Math.floor(Math.random() * 10000) + 1;
         }
 
         function handleRepeatCommand(args) {
-            if (args.length < 2) {
-                alert("Usage: /re count text\nExample: /re 10000 hi");
-                return null;
-            }
             const count = parseInt(args[0]);
             const text = args.slice(1).join(' ');
-            if (isNaN(count) || count < 1 || count > 10000) {
-                alert("Count must be between 1 and 10000.");
-                return null;
-            }
-            return Array(count).fill(text).join(' ');
+            if (isNaN(count) || count < 1) return null;
+            return text.repeat(count);
         }
 
         function handleCalCommand(expression) {
-            try {
-                const result = new Function('return ' + expression.replace(/[^0-9+\-*/(). ]/g, ''))();
-                return result.toString();
-            } catch (e) {
-                alert("Invalid math expression.");
-                return null;
+            try { return eval(expression); } catch { return null; }
+        }
+
+        async function handleDemCommand() {
+            const messagesRef = ref(db, `chatrooms/${currentRoom}/messages`);
+            const snapshot = await get(messagesRef);
+            const messages = snapshot.val();
+            if (messages) {
+                for (const [id, msg] of Object.entries(messages)) {
+                    if (msg.user === currentUser && !msg.system) {
+                        await remove(ref(db, `chatrooms/${currentRoom}/messages/${id}`));
+                    }
+                }
             }
+            await sendSystemMessage(`${currentUser} deleted all their messages.`);
         }
 
         async function handlePullCommand() {
             const messagesRef = ref(db, `chatrooms/${currentRoom}/messages`);
             const snapshot = await get(messagesRef);
-            if (!snapshot.exists()) {
-                sendSystemMessage("No messages in the chat.");
+            const messages = snapshot.val();
+            if (!messages || Object.keys(messages).length === 0) {
+                await sendSystemMessage('No messages to pull.');
                 return;
             }
-            const allMessages = [];
-            snapshot.forEach((child) => {
-                const msg = child.val();
-                if (!msg.system && msg.text && msg.text.startsWith('/')) {
-                    allMessages.push(msg.text);
-                }
-            });
-            if (allMessages.length === 0) {
-                sendSystemMessage("No easter egg commands found.");
-                return;
-            }
-            const randomMsg = allMessages[Math.floor(Math.random() * allMessages.length)];
-            sendSystemMessage(`Pulled random easter egg: ${randomMsg}`);
+            const keys = Object.keys(messages);
+            const randomKey = keys[Math.floor(Math.random() * keys.length)];
+            const msg = messages[randomKey];
+            const pulledText = msg.system ? `System: ${msg.text}` : `${msg.user}: ${msg.text}`;
+            await sendSystemMessage(`Pulled random message: ${pulledText}`);
         }
 
+        async function handleVoiceChatCommand(name) {
+            if (!name) {
+                await sendSystemMessage("Usage: /vc [voice chat name]");
+                return;
+            }
+            const vcRef = ref(db, `chatrooms/${currentRoom}/voiceChat`);
+            await set(vcRef, {
+                title: name,
+                createdBy: currentUser,
+                createdAt: Date.now(),
+                active: true
+            });
+            await sendSystemMessage(`${currentUser} started voice chat: "${name}"`);
+        }
+
+        // Voice Sidebar
+        function updateVoiceSidebar() {
+            const sidebar = document.getElementById('voiceChatSidebar');
+            const titleEl = document.getElementById('vcTitle');
+            const joinBtn = document.getElementById('joinVcBtn');
+            const leaveBtn = document.getElementById('leaveVcBtn');
+
+            if (currentVoiceChat && currentVoiceChat.active) {
+                sidebar.classList.remove('hidden');
+                titleEl.textContent = currentVoiceChat.title || 'Voice Chat';
+                joinBtn.classList.toggle('hidden', isInVoiceChat);
+                leaveBtn.classList.toggle('hidden', !isInVoiceChat);
+            } else {
+                sidebar.classList.add('hidden');
+                isInVoiceChat = false;
+            }
+        }
+
+        window.joinVoiceChat = async () => {
+            const userVcRef = ref(db, `chatrooms/${currentRoom}/voiceChat/users/${currentUser}`);
+            await set(userVcRef, { name: currentUser, joined: Date.now() });
+            isInVoiceChat = true;
+            updateVoiceSidebar();
+            await sendSystemMessage(`${currentUser} joined the voice chat`);
+        };
+
+        window.leaveVoiceChat = async () => {
+            await remove(ref(db, `chatrooms/${currentRoom}/voiceChat/users/${currentUser}`));
+            isInVoiceChat = false;
+            updateVoiceSidebar();
+            await sendSystemMessage(`${currentUser} left the voice chat`);
+        };
+
+        // Voice Chat Listeners
+        onValue(ref(db, `chatrooms/${currentRoom}/voiceChat`), (snapshot) => {
+            const vcData = snapshot.val();
+            currentVoiceChat = vcData && vcData.active ? vcData : null;
+            updateVoiceSidebar();
+        });
+
+        onValue(ref(db, `chatrooms/${currentRoom}/voiceChat/users`), (snapshot) => {
+            const users = snapshot.val() || {};
+            const list = document.getElementById('voiceUsersList');
+            list.innerHTML = '';
+            Object.values(users).forEach(user => {
+                const div = document.createElement('div');
+                div.className = 'voice-user';
+                div.innerHTML = `<span class="mic">🎤</span> ${user.name}`;
+                list.appendChild(div);
+            });
+        });
+
+        // Send Message
         window.sendMessage = async () => {
             const input = document.getElementById('messageInput');
             let message = input.value.trim();
@@ -621,13 +778,13 @@
             let isRepeat = false;
             let isCal = false;
             let finalText = null;
+            let effect = null;
 
             if (message.toLowerCase() === '/dem') {
                 await handleDemCommand();
                 input.value = '';
                 return;
             }
-
             if (message.toLowerCase().startsWith('/random')) {
                 finalText = handleRandomCommand();
                 isRandom = true;
@@ -638,36 +795,43 @@
                 if (finalText) {
                     isRepeat = true;
                     contentToSend = finalText;
-                } else {
-                    input.value = '';
-                    return;
-                }
+                } else return;
             } else if (message.toLowerCase().startsWith('/cal ')) {
                 const expression = message.substring(5).trim();
                 finalText = handleCalCommand(expression);
                 if (finalText) {
                     isCal = true;
                     contentToSend = `${expression} = ${finalText}`;
-                } else {
-                    input.value = '';
-                    return;
-                }
+                } else return;
             } else if (message.toLowerCase().startsWith('/code')) {
                 isCode = true;
                 const parts = message.split(/\s+/);
                 if (parts.length > 1) {
                     const lang = parts[1].toLowerCase();
                     if (['js', 'javascript', 'py', 'python', 'html', 'css', 'json', 'nim', 'cpp', 'c++'].includes(lang)) {
-                        codeLang = lang === 'js' ? 'javascript' 
-                                  : lang === 'py' ? 'python' 
-                                  : lang === 'c++' ? 'cpp' 
-                                  : lang;
+                        codeLang = lang === 'js' ? 'javascript' : lang === 'py' ? 'python' : lang === 'c++' ? 'cpp' : lang;
                     }
                 }
-                const codeStart = message.indexOf(' ', 5) + 1 || message.indexOf(' ', 6) + 1;
+                const codeStart = message.indexOf(' ', message.indexOf(' ') + 1) + 1;
                 contentToSend = message.substring(codeStart).trim();
+            } else if (message.toLowerCase() === '/matrix') {
+                showMatrixDonut();
+                input.value = '';
+                return;
             } else if (message.toLowerCase() === '.pull') {
                 await handlePullCommand();
+                input.value = '';
+                return;
+            } else if (message.toLowerCase().startsWith('.devmode ')) {
+                const target = message.substring(9).trim();
+                if (target) {
+                    showDevPic(target);
+                    await sendSystemMessage(`Dev mode activated for ${target}!`);
+                }
+                input.value = '';
+                return;
+            } else if (message.toLowerCase().startsWith('/vc ')) {
+                await handleVoiceChatCommand(message.substring(4).trim());
                 input.value = '';
                 return;
             }
@@ -675,12 +839,7 @@
             const messagesRef = ref(db, `chatrooms/${currentRoom}/messages`);
             const newMessageRef = push(messagesRef);
 
-            let color = null;
-            let isRainbow = false;
-            let isWebsite = false;
-            let isImage = false;
-            let font = null;
-            let privateTo = null;
+            let color = null, isRainbow = false, isWebsite = false, isImage = false, font = null, privateTo = null;
 
             if (!isCode && !isRandom && !isRepeat && !isCal) {
                 if (message.startsWith('/dm ')) {
@@ -693,18 +852,16 @@
                         return;
                     }
                 }
-
                 if (contentToSend.toLowerCase() === '/cooleffect') {
                     window.open('https://www.youtube.com/watch?v=dQw4w9WgXcQ', '_blank');
                     await sendSystemMessage(`${currentUser} activated a cool effect! ✨`);
                     input.value = '';
                     return;
                 }
-
-                if (contentToSend.toLowerCase() === 'ggjimbob') {
+                if (contentToSend.trim().toLowerCase() === 'ggjimbob') {
                     isRainbow = true;
+                    effect = 'rainbow';
                 }
-
                 if (contentToSend.startsWith('/website ')) {
                     isWebsite = true;
                     contentToSend = contentToSend.substring(9);
@@ -730,32 +887,27 @@
                     }
                 } else {
                     const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp'];
-                    const lowerMessage = contentToSend.toLowerCase();
-                    if (imageExtensions.some(ext => lowerMessage.includes(ext))) {
+                    if (imageExtensions.some(ext => contentToSend.toLowerCase().includes(ext))) {
                         isImage = true;
                     }
                 }
             }
 
+            if (/\u{1F525}{3,}/u.test(contentToSend)) effect = 'fire';
+            if (contentToSend === contentToSend.toUpperCase() && contentToSend.length > 5) effect = 'shake';
+
             await set(newMessageRef, {
                 user: currentUser,
                 text: contentToSend,
                 owner: isOwner,
-                color: color,
-                rainbow: isRainbow,
-                website: isWebsite,
-                image: isImage,
-                font: font,
-                privateTo: privateTo,
-                code: isCode,
-                codeLang: isCode ? codeLang : null,
-                timestamp: Date.now()
+                color, rainbow: isRainbow, website: isWebsite, image: isImage,
+                font, privateTo, code: isCode, codeLang: isCode ? codeLang : null,
+                effect, timestamp: Date.now()
             });
 
-            // Rare rickroll (1 in 1000 chance)
             if (Math.random() < 0.001) {
                 window.open('https://www.youtube.com/watch?v=dQw4w9WgXcQ', '_blank');
-                sendSystemMessage(`${currentUser} got rickrolled! 🎉`);
+                await sendSystemMessage(`${currentUser} got rickrolled! 🎉`);
             }
 
             input.value = '';
@@ -765,11 +917,7 @@
         async function sendSystemMessage(text) {
             const messagesRef = ref(db, `chatrooms/${currentRoom}/messages`);
             const newMessageRef = push(messagesRef);
-            await set(newMessageRef, {
-                system: true,
-                text: text,
-                timestamp: Date.now()
-            });
+            await set(newMessageRef, { system: true, text, timestamp: Date.now() });
         }
 
         function displayMessages(messages) {
@@ -777,50 +925,36 @@
             container.innerHTML = '';
             if (!messages) return;
 
-            let hasGgjimbob = false;
-
-            const sortedMessages = Object.entries(messages).sort((a, b) => a[1].timestamp - b[1].timestamp);
-            sortedMessages.forEach(([id, msg]) => {
+            const sorted = Object.entries(messages).sort((a, b) => a[1].timestamp - b[1].timestamp);
+            sorted.forEach(([id, msg]) => {
                 if (msg.privateTo && currentUser !== msg.user && currentUser !== msg.privateTo) return;
 
                 const div = document.createElement('div');
                 div.className = 'message';
+                if (msg.system) div.classList.add('server');
+
+                const content = document.createElement('div');
+                content.className = 'message-content';
 
                 if (msg.system) {
-                    div.classList.add('server');
-                    const content = document.createElement('div');
-                    content.className = 'message-content';
                     content.textContent = `server: ${msg.text}`;
-                    div.appendChild(content);
                 } else {
-                    if (msg.owner) div.classList.add('owner');
-
                     let prefix = msg.user + ': ';
-                    if (msg.privateTo) {
-                        prefix = `DM ${currentUser === msg.user ? 'to ' + msg.privateTo : 'from ' + msg.user}: `;
-                    }
-
-                    const content = document.createElement('div');
-                    content.className = 'message-content';
+                    if (msg.privateTo) prefix = `DM ${currentUser === msg.user ? 'to ' + msg.privateTo : 'from ' + msg.user}: `;
+                    content.innerHTML = prefix;
 
                     if (msg.font) content.style.fontFamily = msg.font;
-
                     if (msg.website) {
-                        const escapedText = msg.text
-                            .replace(/\\/g, '\\\\')
-                            .replace(/"/g, '&quot;')
-                            .replace(/'/g, '&#39;');
-                        content.innerHTML = `
-                            ${prefix}<br>
-                            <div style="font-size: 12px; color: #ff4444; margin-bottom: 5px;">⚠️ User-submitted code — runs with full permissions</div>
+                        const escaped = msg.text.replace(/\\/g, '\\\\').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+                        content.innerHTML += `
+                            <br><div style="font-size: 12px; color: #ff4444;">⚠️ User-submitted code</div>
                             <div class="html-preview">
-                                <iframe srcdoc="${escapedText}"></iframe>
+                                <iframe srcdoc="${escaped}"></iframe>
                                 <button class="fullscreen-btn" onclick="openFullscreen(this.parentNode)">Fullscreen</button>
-                            </div>
-                        `;
+                            </div>`;
                     } else if (msg.image) {
                         const textWithLinks = linkify(msg.text);
-                        content.innerHTML = `${prefix}${textWithLinks}`;
+                        content.innerHTML += textWithLinks;
                         const urlMatch = msg.text.match(/https?:\/\/[^\s]+/);
                         if (urlMatch) {
                             const img = document.createElement('img');
@@ -832,98 +966,66 @@
                             content.appendChild(img);
                         }
                     } else if (msg.rainbow) {
-                        const textWithLinks = linkify(msg.text);
-                        content.innerHTML = `${prefix}<span class="rainbow">${textWithLinks}</span>`;
+                        content.innerHTML += `<span class="rainbow">${linkify(msg.text)}</span>`;
                     } else if (msg.color) {
-                        const textWithLinks = linkify(msg.text);
-                        content.innerHTML = `${prefix}<span style="color: ${msg.color}">${textWithLinks}</span>`;
+                        content.innerHTML += `<span style="color: ${msg.color}">${linkify(msg.text)}</span>`;
                     } else if (msg.code) {
-                        const escapedCode = msg.text
-                            .replace(/&/g, '&amp;')
-                            .replace(/</g, '&lt;')
-                            .replace(/>/g, '&gt;')
-                            .replace(/"/g, '&quot;')
-                            .replace(/'/g, '&#39;');
-                        const langClass = msg.codeLang || 'javascript';
-                        content.innerHTML = `
-                            ${prefix}<br>
-                            <pre class="code-block language-${langClass}">
+                        const escaped = msg.text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+                        content.innerHTML += `
+                            <br><pre class="code-block language-${msg.codeLang}">
                                 <button onclick="navigator.clipboard.writeText(this.parentNode.querySelector('code').innerText); alert('Code copied!')">Copy</button>
-                                <code class="language-${langClass}">${escapedCode}</code>
-                            </pre>
-                        `;
+                                <code>${escaped}</code>
+                            </pre>`;
                         setTimeout(() => Prism.highlightAllUnder(content), 100);
                     } else {
-                        const textWithLinks = linkify(msg.text);
-                        content.innerHTML = `${prefix}${textWithLinks}`;
+                        content.innerHTML += linkify(msg.text);
                     }
 
-                    if (msg.edited) {
-                        content.innerHTML += ' <span style="color: #999; font-size: 11px;">(edited)</span>';
-                    }
+                    if (msg.edited) content.innerHTML += ' <span style="color: #999; font-size: 11px;">(edited)</span>';
+                }
 
-                    // Check for exact ggjimbob (case-insensitive, exact match)
-                    if (msg.text && msg.text.trim().toLowerCase() === 'ggjimbob' && msg.timestamp > lastProcessedTimestamp) {
-                        hasGgjimbob = true;
-                        lastProcessedTimestamp = msg.timestamp; // Update to prevent re-trigger
-                        content.innerHTML = `${prefix}<span class="rainbow">${linkify(msg.text)}</span>`;
-                    }
+                div.appendChild(content);
 
-                    div.appendChild(content);
-
-                    if ((msg.user === currentUser || isOwner) && !msg.system) {
-                        const deleteBtn = document.createElement('div');
-                        deleteBtn.className = 'delete-icon';
-                        deleteBtn.textContent = '🗑️';
-                        deleteBtn.onclick = () => deleteOwnMessage(id, msg.user);
-                        div.appendChild(deleteBtn);
-                    }
-
-                    if (isOwner && !msg.system) {
-                        const editBtn = document.createElement('div');
-                        editBtn.className = 'edit-icon';
-                        editBtn.textContent = '✏️ Edit';
-                        editBtn.onclick = () => showEditModal(id, msg.text);
-                        div.appendChild(editBtn);
-                    }
+                if ((msg.user === currentUser || isOwner) && !msg.system) {
+                    const delBtn = document.createElement('div');
+                    delBtn.className = 'delete-icon';
+                    delBtn.textContent = '🗑️';
+                    delBtn.onclick = () => deleteOwnMessage(id, msg.user);
+                    div.appendChild(delBtn);
+                }
+                if (isOwner && !msg.system) {
+                    const editBtn = document.createElement('div');
+                    editBtn.className = 'edit-icon';
+                    editBtn.textContent = '✏️ Edit';
+                    editBtn.onclick = () => showEditModal(id, msg.text);
+                    div.appendChild(editBtn);
                 }
 
                 container.appendChild(div);
+
+                if (msg.effect && !processedEffects.has(id)) {
+                    processedEffects.add(id);
+                    if (msg.effect === 'fire') triggerFire();
+                    if (msg.effect === 'shake') triggerShake();
+                    if (msg.effect === 'rainbow') triggerRainbow();
+                }
             });
-
             container.scrollTop = container.scrollHeight;
-
-            // Rainbow chatroom effect only when new exact ggjimbob is sent
-            if (hasGgjimbob) {
-                const chatroom = document.getElementById('chatroom');
-                chatroom.classList.add('rainbow-chatroom');
-                setTimeout(() => {
-                    chatroom.classList.remove('rainbow-chatroom');
-                }, 5000);
-            }
         }
 
         function linkify(text) {
-            const urlRegex = /(https?:\/\/[^\s]+)/g;
-            return text.replace(urlRegex, (url) => {
-                return `<a href="${url}" target="_blank" class="message-link">${url}</a>`;
-            });
+            return text.replace(/(https?:\/\/[^\s]+)/g, url => `<a href="${url}" target="_blank" class="message-link">${url}</a>`);
         }
 
         window.openFullscreen = (preview) => {
-            const iframe = preview.querySelector('iframe');
-            const srcdoc = iframe.getAttribute('srcdoc');
-            const overlay = document.getElementById('fullscreenOverlay');
-            const content = document.getElementById('fullscreenContent');
-            content.innerHTML = `<iframe srcdoc="${srcdoc}"></iframe>`;
-            overlay.classList.add('active');
+            const srcdoc = preview.querySelector('iframe').getAttribute('srcdoc');
+            document.getElementById('fullscreenContent').innerHTML = `<iframe srcdoc="${srcdoc}"></iframe>`;
+            document.getElementById('fullscreenOverlay').classList.add('active');
         };
 
         window.closeFullscreen = () => {
-            const overlay = document.getElementById('fullscreenOverlay');
-            const content = document.getElementById('fullscreenContent');
-            overlay.classList.remove('active');
-            content.innerHTML = '';
+            document.getElementById('fullscreenOverlay').classList.remove('active');
+            document.getElementById('fullscreenContent').innerHTML = '';
         };
 
         window.leaveChatroom = async () => {
@@ -932,43 +1034,42 @@
                 await remove(userRef);
             }
             if (messagesListener) messagesListener();
-            document.getElementById('chatroom').classList.remove('active');
-            document.getElementById('mainMenu').style.display = 'block';
+            document.getElementById('chatroom').style.display = 'none';
+            document.getElementById('mainMenu').style.display = 'flex';
             document.getElementById('messagesContainer').innerHTML = '';
             document.getElementById('closeChatroomBtn').classList.add('hidden');
+            document.getElementById('voiceChatSidebar').classList.add('hidden');
             currentRoom = null;
             currentUser = null;
             isOwner = false;
             userRef = null;
             participants = [];
-            lastProcessedTimestamp = 0; // Reset on leave
+            processedEffects = new Set();
+            currentVoiceChat = null;
+            isInVoiceChat = false;
         };
 
         window.closeChatroom = async () => {
             if (!isOwner) return;
-            if (confirm('Are you sure you want to close this chatroom? This will remove all data.')) {
-                const roomRef = ref(db, `chatrooms/${currentRoom}`);
-                await sendSystemMessage('Chatroom closed by owner');
-                setTimeout(async () => {
-                    await remove(roomRef);
-                    if (messagesListener) messagesListener();
-                    document.getElementById('chatroom').classList.remove('active');
-                    document.getElementById('mainMenu').style.display = 'block';
-                    document.getElementById('messagesContainer').innerHTML = '';
-                    document.getElementById('closeChatroomBtn').classList.add('hidden');
-                    currentRoom = null;
-                    currentUser = null;
-                    isOwner = false;
-                    userRef = null;
-                    participants = [];
-                    lastProcessedTimestamp = 0;
-                }, 500);
+            if (confirm('Close chatroom and all data?')) {
+                await remove(ref(db, `chatrooms/${currentRoom}`));
+                document.getElementById('chatroom').style.display = 'none';
+                document.getElementById('mainMenu').style.display = 'flex';
+                document.getElementById('voiceChatSidebar').classList.add('hidden');
+                currentRoom = null;
+                currentUser = null;
+                isOwner = false;
+                userRef = null;
+                participants = [];
+                processedEffects = new Set();
+                currentVoiceChat = null;
+                isInVoiceChat = false;
             }
         };
 
         window.copyCode = () => {
             navigator.clipboard.writeText(currentRoom);
-            alert('Room code copied to clipboard!');
+            alert('Room code copied!');
         };
 
         window.handleKeyPress = (e) => {
@@ -983,52 +1084,46 @@
             const dropdown = document.getElementById('autocompleteDropdown');
             const value = input.value.trim();
             dropdown.innerHTML = '';
+
             if (value.startsWith('/')) {
                 const parts = value.split(/\s+/);
-                const searchTerm = parts[0].toLowerCase();
+                const cmd = parts[0].toLowerCase();
+
                 if (parts.length === 1) {
-                    const filteredCommands = commands.filter(c => c.cmd.toLowerCase().startsWith(searchTerm));
-                    if (filteredCommands.length > 0) {
-                        dropdown.innerHTML = filteredCommands.map(c =>
-                            `<div class="autocomplete-item" onclick="selectCommand('${c.cmd}')">
+                    const filtered = commands.filter(c => c.cmd.toLowerCase().startsWith(cmd));
+                    if (filtered.length > 0) {
+                        dropdown.innerHTML = filtered.map(c =>
+                            `<div class="autocomplete-item" onclick="selectCommand('${c.cmd} ')">
                                 <div class="command">${c.cmd}</div>
                                 <div class="description">${c.desc}</div>
                             </div>`
                         ).join('');
                         dropdown.classList.add('active');
-                    } else {
-                        dropdown.classList.remove('active');
                     }
-                } else if (parts.length >= 2) {
-                    const cmd = commands.find(c => c.cmd.toLowerCase() === searchTerm);
-                    if (cmd && cmd.sub) {
+                } else {
+                    const command = commands.find(c => c.cmd.toLowerCase() === cmd);
+                    if (command && command.sub) {
                         const subSearch = parts[1].toLowerCase();
-                        const filteredSubs = cmd.sub.filter(s => s.toLowerCase().startsWith(subSearch));
+                        const filteredSubs = command.sub.filter(s => s.toLowerCase().startsWith(subSearch));
                         if (filteredSubs.length > 0) {
                             dropdown.innerHTML = filteredSubs.map(s =>
-                                `<div class="autocomplete-item" onclick="selectSub('${cmd.cmd} ${s}')">
+                                `<div class="autocomplete-item" onclick="selectSub('${command.cmd} ${s} ')">
                                     <div class="command">${s}</div>
                                 </div>`
                             ).join('');
                             dropdown.classList.add('active');
-                        } else {
-                            dropdown.classList.remove('active');
                         }
-                    } else if (searchTerm === '/dm') {
+                    } else if (cmd === '/dm') {
                         const subSearch = parts[1].toLowerCase();
                         const filteredUsers = participants.filter(u => u.toLowerCase().startsWith(subSearch) && u !== currentUser);
                         if (filteredUsers.length > 0) {
                             dropdown.innerHTML = filteredUsers.map(u =>
-                                `<div class="autocomplete-item" onclick="selectSub('/dm ${u}')">
+                                `<div class="autocomplete-item" onclick="selectSub('/dm ${u} ')">
                                     <div class="command">${u}</div>
                                 </div>`
                             ).join('');
                             dropdown.classList.add('active');
-                        } else {
-                            dropdown.classList.remove('active');
                         }
-                    } else {
-                        dropdown.classList.remove('active');
                     }
                 }
             } else {
@@ -1037,128 +1132,112 @@
         };
 
         window.selectCommand = (cmd) => {
-            const input = document.getElementById('messageInput');
-            input.value = cmd + ' ';
-            input.focus();
+            document.getElementById('messageInput').value = cmd;
+            document.getElementById('messageInput').focus();
             document.getElementById('autocompleteDropdown').classList.remove('active');
         };
 
         window.selectSub = (value) => {
-            const input = document.getElementById('messageInput');
-            input.value = value + ' ';
-            input.focus();
+            document.getElementById('messageInput').value = value;
+            document.getElementById('messageInput').focus();
             document.getElementById('autocompleteDropdown').classList.remove('active');
         };
 
+        // Modal close functions
+        window.closeCreateModal = () => document.getElementById('createModal').classList.remove('active');
+        window.closeJoinModal = () => document.getElementById('joinModal').classList.remove('active');
+        window.closeEditModal = () => {
+            document.getElementById('editModal').classList.remove('active');
+            editingMessageId = null;
+        };
+
         window.createChatroom = async () => {
-            try {
-                let code = document.getElementById('createCodeInput').value.trim();
-                if (!code) code = generateCode();
-                const roomRef = ref(db, `chatrooms/${code}`);
-                const snapshot = await get(roomRef);
-                if (snapshot.exists()) {
-                    alert('This chatroom code already exists. Please choose another.');
-                    return;
-                }
-                currentRoom = code;
-                currentUser = document.getElementById('usernameInput').value.trim();
-                if (!currentUser) {
-                    alert('Please enter a username!');
-                    return;
-                }
-                isOwner = true;
-                await set(roomRef, {
-                    owner: currentUser,
-                    created: Date.now()
-                });
-                joinRoom(code, true);
-                hideCreateModal();
-            } catch (error) {
-                console.error('Error creating chatroom:', error);
-                alert(`Failed to create chatroom: ${error.message}`);
+            let code = document.getElementById('createCodeInput').value.trim() || generateCode();
+            const roomRef = ref(db, `chatrooms/${code}`);
+            if ((await get(roomRef)).exists()) {
+                alert('Code already taken.');
+                return;
             }
+            currentRoom = code;
+            currentUser = document.getElementById('usernameInput').value.trim();
+            if (!currentUser) return alert('Enter a username!');
+            isOwner = true;
+            await set(roomRef, { owner: currentUser, created: Date.now() });
+            joinRoom(code, true);
+            closeCreateModal();
         };
 
         window.joinChatroom = async () => {
-            try {
-                const code = document.getElementById('joinCodeInput').value.trim();
-                if (!code) {
-                    alert('Please enter a chatroom code.');
-                    return;
-                }
-                const roomRef = ref(db, `chatrooms/${code}`);
-                const snapshot = await get(roomRef);
-                if (!snapshot.exists()) {
-                    alert('Chatroom does not exist.');
-                    return;
-                }
-                currentRoom = code;
-                currentUser = document.getElementById('usernameInput').value.trim();
-                if (!currentUser) {
-                    alert('Please enter a username!');
-                    return;
-                }
-                isOwner = false;
-                joinRoom(code, false);
-                hideJoinModal();
-            } catch (error) {
-                console.error('Error joining chatroom:', error);
-                alert(`Failed to join chatroom: ${error.message}`);
-            }
+            const code = document.getElementById('joinCodeInput').value.trim();
+            if (!code) return alert('Enter a code!');
+            const roomRef = ref(db, `chatrooms/${code}`);
+            if (!(await get(roomRef)).exists()) return alert('Room not found.');
+            currentRoom = code;
+            currentUser = document.getElementById('usernameInput').value.trim();
+            if (!currentUser) return alert('Enter a username!');
+            isOwner = false;
+            joinRoom(code, false);
+            closeJoinModal();
         };
 
         async function joinRoom(code, owner) {
-            try {
-                document.getElementById('mainMenu').style.display = 'none';
-                document.getElementById('chatroom').classList.add('active');
-                document.getElementById('roomCodeDisplay').textContent = `Room: ${code}`;
-                if (owner) {
-                    document.getElementById('closeChatroomBtn').classList.remove('hidden');
-                }
+            document.getElementById('mainMenu').style.display = 'none';
+            document.getElementById('chatroom').style.display = 'flex';
+            document.getElementById('roomCodeDisplay').textContent = `Room: ${code}`;
+            if (owner) document.getElementById('closeChatroomBtn').classList.remove('hidden');
 
-                const participantsRef = ref(db, `chatrooms/${code}/participants`);
-                userRef = push(participantsRef);
-                await set(userRef, {
-                    name: currentUser,
-                    joined: Date.now()
-                });
-                onDisconnect(userRef).remove();
+            const participantsRef = ref(db, `chatrooms/${code}/participants`);
+            userRef = push(participantsRef);
+            await set(userRef, { name: currentUser, joined: Date.now() });
+            onDisconnect(userRef).remove();
 
-                await sendSystemMessage(`${currentUser} joined`);
-
-                const messagesRef = ref(db, `chatrooms/${code}/messages`);
-                messagesListener = onValue(messagesRef, (snapshot) => {
-                    const messages = snapshot.val();
-                    displayMessages(messages);
-                });
-
-                onValue(participantsRef, (snapshot) => {
-                    const parts = snapshot.val() || {};
-                    participants = [...new Set(Object.values(parts).map(p => p.name))];
-                });
-            } catch (error) {
-                console.error('Error joining room:', error);
-                alert(`Error joining room: ${error.message}`);
-            }
-        }
-
-        function validateUsername() {
-            const username = document.getElementById('usernameInput').value.trim();
-            if (!username) {
-                alert('Please enter your name first.');
-                return false;
-            }
-            return true;
+            await sendSystemMessage(`${currentUser} joined`);
+            messagesListener = onValue(ref(db, `chatrooms/${code}/messages`), snap => displayMessages(snap.val()));
+            onValue(participantsRef, snap => {
+                participants = [...new Set(Object.values(snap.val() || {}).map(p => p.name))];
+            });
         }
 
         function generateCode() {
             const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
             let code = '';
-            for (let i = 0; i < 6; i++) {
-                code += chars.charAt(Math.floor(Math.random() * chars.length));
-            }
+            for (let i = 0; i < 6; i++) code += chars.charAt(Math.floor(Math.random() * chars.length));
             return code;
         }
+
+        document.getElementById('startBtn').addEventListener('click', () => {
+            if (!document.getElementById('usernameInput').value.trim()) return alert('Enter your name!');
+            document.getElementById('createModal').classList.add('active');
+            document.getElementById('createCodeInput').value = generateCode();
+        });
+
+        document.getElementById('joinBtn').addEventListener('click', () => {
+            if (!document.getElementById('usernameInput').value.trim()) return alert('Enter your name!');
+            document.getElementById('joinModal').classList.add('active');
+        });
+
+        window.showEditModal = (id, text) => {
+            editingMessageId = id;
+            document.getElementById('editMessageInput').value = text;
+            document.getElementById('editModal').classList.add('active');
+        };
+
+        window.saveEditedMessage = async () => {
+            if (!editingMessageId) return;
+            const newText = document.getElementById('editMessageInput').value.trim();
+            if (!newText) return alert('Message cannot be empty.');
+            const msgRef = ref(db, `chatrooms/${currentRoom}/messages/${editingMessageId}`);
+            const data = (await get(msgRef)).val();
+            if (data) await set(msgRef, { ...data, text: newText, edited: true });
+            closeEditModal();
+        };
+
+        window.deleteOwnMessage = async (id, user) => {
+            if (user !== currentUser && !isOwner) return alert("You can only delete your own messages.");
+            if (confirm('Delete this message?')) {
+                await remove(ref(db, `chatrooms/${currentRoom}/messages/${id}`));
+            }
+        };
     </script>
 </body>
 </html>
