@@ -21,8 +21,8 @@
         }
         .container {
             width: 100%;
-            max-width: 900px;
-            height: 700px;
+            max-width: 800px;
+            height: 600px;
             background: #2d2d2d;
             border-radius: 10px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
@@ -167,12 +167,12 @@
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 10px;
         }
         .message {
-            padding: 12px 18px;
+            padding: 10px 15px;
             background: #3a3a3a;
-            border-radius: 8px;
+            border-radius: 5px;
             word-wrap: break-word;
             position: relative;
             display: flex;
@@ -182,26 +182,34 @@
         .message-content {
             flex: 1;
         }
-        .edit-icon, .delete-icon {
+        .edit-icon {
             opacity: 0;
             cursor: pointer;
-            padding: 6px 12px;
-            border-radius: 4px;
-            font-size: 13px;
-            transition: opacity 0.2s;
-            margin-left: 8px;
-        }
-        .edit-icon {
+            padding: 5px 10px;
             background: #4a4a4a;
+            border-radius: 3px;
+            font-size: 12px;
+            transition: opacity 0.2s;
+            margin-left: 10px;
         }
-        .delete-icon {
-            background: #ed4245;
-        }
-        .message:hover .edit-icon, .message:hover .delete-icon {
+        .message:hover .edit-icon {
             opacity: 1;
         }
         .edit-icon:hover {
             background: #5a5a5a;
+        }
+        .delete-icon {
+            opacity: 0;
+            cursor: pointer;
+            padding: 5px 10px;
+            background: #ed4245;
+            border-radius: 3px;
+            font-size: 12px;
+            transition: opacity 0.2s;
+            margin-left: 5px;
+        }
+        .message:hover .delete-icon {
+            opacity: 1;
         }
         .delete-icon:hover {
             background: #c03537;
@@ -214,33 +222,89 @@
         .message-link:hover {
             color: #4752c4;
         }
-        .html-preview {
-            background: #111;
-            border: 2px solid #444;
-            border-radius: 8px;
-            margin-top: 12px;
-            width: 100%;
-            height: 500px; /* Bigger preview */
-            overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.6);
-            position: relative;
+        .message-image {
+            max-width: 300px;
+            max-height: 300px;
+            border-radius: 5px;
+            margin-top: 10px;
+            cursor: pointer;
         }
-        .html-preview-loading {
-            position: absolute;
-            inset: 0;
-            background: rgba(0,0,0,0.7);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #aaa;
-            font-style: italic;
-            z-index: 2;
-            pointer-events: none;
+        .html-preview {
+            background: #1a1a1a;
+            border: 1px solid #4a4a4a;
+            border-radius: 5px;
+            padding: 0;
+            margin-top: 10px;
+            width: 100%;
+            max-width: 500px;
+            height: 300px;
+            overflow: hidden;
+            position: relative;
         }
         .html-preview iframe {
             width: 100%;
             height: 100%;
             border: none;
+            border-radius: 5px;
+        }
+        .fullscreen-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: #5865f2;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+            z-index: 10;
+        }
+        .fullscreen-btn:hover {
+            background: #4752c4;
+        }
+        .fullscreen-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+        }
+        .fullscreen-overlay.active {
+            display: flex;
+        }
+        .fullscreen-content {
+            width: 90vw;
+            height: 90vh;
+            background: white;
+            border-radius: 10px;
+            position: relative;
+        }
+        .fullscreen-content iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 10px;
+        }
+        .close-fullscreen {
+            position: absolute;
+            top: -40px;
+            right: 0;
+            background: #ed4245;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .close-fullscreen:hover {
+            background: #c03537;
         }
         .autocomplete-dropdown {
             position: absolute;
@@ -280,7 +344,7 @@
             font-style: italic;
         }
         .message.owner {
-            border-left: 4px solid #5865f2;
+            border-left: 3px solid #5865f2;
         }
         .rainbow {
             background: linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3);
@@ -381,11 +445,14 @@
             </div>
         </div>
     </div>
-
+    <!-- Fullscreen Overlay -->
+    <div class="fullscreen-overlay" id="fullscreenOverlay">
+        <div class="fullscreen-content" id="fullscreenContent"></div>
+        <button class="close-fullscreen" onclick="closeFullscreen()">Close</button>
+    </div>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, set, push, onValue, onDisconnect, remove, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
         const firebaseConfig = {
             apiKey: "AIzaSyBmq1EwejAgVQ37hUyLZpxG19AtxvAA74M",
             authDomain: "ggjimbob-2f0f7.firebaseapp.com",
@@ -396,55 +463,47 @@
             appId: "1:75510860344:web:a63313536e73eb6239b4cd",
             measurementId: "G-1P46LYPC4J"
         };
-
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-
         let currentRoom = null;
         let currentUser = null;
         let isOwner = false;
         let userRef = null;
         let messagesListener = null;
         let editingMessageId = null;
-
+        let participants = [];
         const commands = [
             { cmd: '/color', desc: 'Change text color - /color [color] [text]', sub: ['red', 'blue', 'green', 'yellow', 'purple', 'orange', 'pink', 'cyan', 'white', 'rainbow'] },
             { cmd: '/website', desc: 'Display website code - /website [html/css/js code]' },
             { cmd: '/pic', desc: 'Display image - /pic [image url]' },
             { cmd: '/fonts', desc: 'Change font - /fonts [font] [text]', sub: ['Arial', 'Comic Sans MS', 'Courier New', 'Georgia', 'Impact', 'Times New Roman', 'Trebuchet MS', 'Verdana', 'Brush Script MT', 'Palatino'] },
+            { cmd: '/dm', desc: 'Send private message - /dm [username] [message]' },
             { cmd: '/cooleffect', desc: 'Activate a cool effect... 😎' }
         ];
-
         window.showCreateModal = () => {
             if (!validateUsername()) return;
             document.getElementById('createModal').classList.add('active');
             document.getElementById('createCodeInput').value = generateCode();
         };
-
         window.hideCreateModal = () => {
             document.getElementById('createModal').classList.remove('active');
         };
-
         window.showJoinModal = () => {
             if (!validateUsername()) return;
             document.getElementById('joinModal').classList.add('active');
         };
-
         window.hideJoinModal = () => {
             document.getElementById('joinModal').classList.remove('active');
         };
-
         window.showEditModal = (messageId, currentText) => {
             editingMessageId = messageId;
             document.getElementById('editMessageInput').value = currentText;
             document.getElementById('editModal').classList.add('active');
         };
-
         window.hideEditModal = () => {
             document.getElementById('editModal').classList.remove('active');
             editingMessageId = null;
         };
-
         window.saveEditedMessage = async () => {
             if (!editingMessageId) return;
             const newText = document.getElementById('editMessageInput').value.trim();
@@ -464,53 +523,87 @@
             }
             hideEditModal();
         };
-
         window.deleteMessage = async (messageId) => {
             if (!isOwner) return;
             if (confirm('Are you sure you want to delete this message?')) {
-                const messageRef = ref(db, `chatrooms/${currentRoom}/messages/${messageId}`);
-                await remove(messageRef);
+                await remove(ref(db, `chatrooms/${currentRoom}/messages/${messageId}`));
             }
         };
-
         window.deleteOwnMessage = async (messageId, messageUser) => {
             if (messageUser !== currentUser && !isOwner) return;
             if (confirm('Are you sure you want to delete this message?')) {
-                const messageRef = ref(db, `chatrooms/${currentRoom}/messages/${messageId}`);
-                await remove(messageRef);
+                await remove(ref(db, `chatrooms/${currentRoom}/messages/${messageId}`));
             }
         };
-
         window.handleAutocomplete = () => {
             const input = document.getElementById('messageInput');
             const dropdown = document.getElementById('autocompleteDropdown');
-            const value = input.value;
+            const value = input.value.trim();
+            dropdown.innerHTML = '';
             if (value.startsWith('/')) {
-                const searchTerm = value.toLowerCase();
-                const filtered = commands.filter(c => c.cmd.toLowerCase().startsWith(searchTerm));
-                if (filtered.length > 0) {
-                    dropdown.innerHTML = filtered.map(c =>
-                        `<div class="autocomplete-item" onclick="selectCommand('${c.cmd}')">
-                            <div class="command">${c.cmd}</div>
-                            <div class="description">${c.desc}</div>
-                        </div>`
-                    ).join('');
-                    dropdown.classList.add('active');
-                } else {
-                    dropdown.classList.remove('active');
+                const parts = value.split(/\s+/);
+                const searchTerm = parts[0].toLowerCase();
+                if (parts.length === 1) {
+                    const filteredCommands = commands.filter(c => c.cmd.toLowerCase().startsWith(searchTerm));
+                    if (filteredCommands.length > 0) {
+                        dropdown.innerHTML = filteredCommands.map(c =>
+                            `<div class="autocomplete-item" onclick="selectCommand('${c.cmd}')">
+                                <div class="command">${c.cmd}</div>
+                                <div class="description">${c.desc}</div>
+                            </div>`
+                        ).join('');
+                        dropdown.classList.add('active');
+                    } else {
+                        dropdown.classList.remove('active');
+                    }
+                } else if (parts.length >= 2) {
+                    const cmd = commands.find(c => c.cmd.toLowerCase() === searchTerm);
+                    if (cmd && cmd.sub) {
+                        const subSearch = parts[1].toLowerCase();
+                        const filteredSubs = cmd.sub.filter(s => s.toLowerCase().startsWith(subSearch));
+                        if (filteredSubs.length > 0) {
+                            dropdown.innerHTML = filteredSubs.map(s =>
+                                `<div class="autocomplete-item" onclick="selectSub('${cmd.cmd} ${s}')">
+                                    <div class="command">${s}</div>
+                                </div>`
+                            ).join('');
+                            dropdown.classList.add('active');
+                        } else {
+                            dropdown.classList.remove('active');
+                        }
+                    } else if (searchTerm === '/dm') {
+                        const subSearch = parts[1].toLowerCase();
+                        const filteredUsers = participants.filter(u => u.toLowerCase().startsWith(subSearch) && u !== currentUser);
+                        if (filteredUsers.length > 0) {
+                            dropdown.innerHTML = filteredUsers.map(u =>
+                                `<div class="autocomplete-item" onclick="selectSub('/dm ${u}')">
+                                    <div class="command">${u}</div>
+                                </div>`
+                            ).join('');
+                            dropdown.classList.add('active');
+                        } else {
+                            dropdown.classList.remove('active');
+                        }
+                    } else {
+                        dropdown.classList.remove('active');
+                    }
                 }
             } else {
                 dropdown.classList.remove('active');
             }
         };
-
         window.selectCommand = (cmd) => {
             const input = document.getElementById('messageInput');
             input.value = cmd + ' ';
             input.focus();
             document.getElementById('autocompleteDropdown').classList.remove('active');
         };
-
+        window.selectSub = (value) => {
+            const input = document.getElementById('messageInput');
+            input.value = value + ' ';
+            input.focus();
+            document.getElementById('autocompleteDropdown').classList.remove('active');
+        };
         window.createChatroom = async () => {
             try {
                 let code = document.getElementById('createCodeInput').value.trim();
@@ -535,7 +628,6 @@
                 alert('Error creating chatroom: ' + error.message);
             }
         };
-
         window.joinChatroom = async () => {
             try {
                 const code = document.getElementById('joinCodeInput').value.trim();
@@ -559,210 +651,236 @@
                 alert('Error joining chatroom: ' + error.message);
             }
         };
-
         async function joinRoom(code, owner) {
             document.getElementById('mainMenu').style.display = 'none';
             document.getElementById('chatroom').classList.add('active');
             document.getElementById('roomCodeDisplay').textContent = `Room: ${code}`;
-            if (owner) document.getElementById('closeChatroomBtn').classList.remove('hidden');
+            if (owner) {
+                document.getElementById('closeChatroomBtn').classList.remove('hidden');
+            }
             const participantsRef = ref(db, `chatrooms/${code}/participants`);
             userRef = push(participantsRef);
-            await set(userRef, { name: currentUser, joined: Date.now() });
+            await set(userRef, {
+                name: currentUser,
+                joined: Date.now()
+            });
             onDisconnect(userRef).remove();
             sendSystemMessage(`${currentUser} joined`);
             const messagesRef = ref(db, `chatrooms/${code}/messages`);
             messagesListener = onValue(messagesRef, (snapshot) => {
-                displayMessages(snapshot.val());
+                const messages = snapshot.val();
+                displayMessages(messages);
             });
-            onValue(ref(db, `chatrooms/${code}/participants`), () => {});
+            onValue(participantsRef, (snapshot) => {
+                const parts = snapshot.val() || {};
+                participants = [...new Set(Object.values(parts).map(p => p.name))];
+            });
         }
-
         window.sendMessage = async () => {
             const input = document.getElementById('messageInput');
             let message = input.value.trim();
             if (!message) return;
-
             const messagesRef = ref(db, `chatrooms/${currentRoom}/messages`);
             const newMessageRef = push(messagesRef);
-
             let color = null;
             let isRainbow = false;
             let isWebsite = false;
             let isImage = false;
             let font = null;
-
-            if (message.toLowerCase() === '/cooleffect') {
+            let privateTo = null;
+            let contentToSend = message;
+            if (message.startsWith('/dm ')) {
+                const dmParts = message.substring(4).trim().split(/\s+/);
+                if (dmParts.length >= 2) {
+                    privateTo = dmParts[0];
+                    contentToSend = dmParts.slice(1).join(' ');
+                } else {
+                    alert('Invalid /dm format. Use /dm [username] [message]');
+                    return;
+                }
+            }
+            if (contentToSend.toLowerCase() === '/cooleffect') {
                 window.open('https://www.youtube.com/watch?v=dQw4w9WgXcQ', '_blank');
                 await sendSystemMessage(`${currentUser} activated a cool effect! ✨`);
                 input.value = '';
                 return;
             }
-
-            if (message.toLowerCase() === 'ggjimbob') {
+            if (contentToSend.toLowerCase() === 'ggjimbob') {
                 isRainbow = true;
             }
-
-            if (message.startsWith('/website ')) {
+            if (contentToSend.startsWith('/website ')) {
                 isWebsite = true;
-                message = message.substring(9).trim();
-            } else if (message.startsWith('/pic ')) {
+                contentToSend = contentToSend.substring(9);
+            }
+            else if (contentToSend.startsWith('/pic ')) {
                 isImage = true;
-                message = message.substring(5).trim();
-            } else if (message.startsWith('/fonts ')) {
-                const parts = message.substring(7).split(' ');
+                contentToSend = contentToSend.substring(5);
+            }
+            else if (contentToSend.startsWith('/fonts ')) {
+                const parts = contentToSend.substring(7).split(' ');
                 if (parts.length >= 2) {
                     font = parts[0];
-                    message = parts.slice(1).join(' ');
+                    contentToSend = parts.slice(1).join(' ');
                 }
-            } else if (message.startsWith('/color ')) {
-                const parts = message.substring(7).split(' ');
+            }
+            else if (contentToSend.startsWith('/color ')) {
+                const parts = contentToSend.substring(7).split(' ');
                 if (parts.length >= 2) {
                     if (parts[0].toLowerCase() === 'rainbow') {
                         isRainbow = true;
-                        message = parts.slice(1).join(' ');
+                        contentToSend = parts.slice(1).join(' ');
                     } else {
                         color = parts[0];
-                        message = parts.slice(1).join(' ');
+                        contentToSend = parts.slice(1).join(' ');
                     }
                 }
-            } else {
+            }
+            else {
                 const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp'];
-                if (imageExtensions.some(ext => message.toLowerCase().includes(ext))) {
+                const lowerMessage = contentToSend.toLowerCase();
+                if (imageExtensions.some(ext => lowerMessage.includes(ext))) {
                     isImage = true;
                 }
             }
-
-            const messageData = {
+            await set(newMessageRef, {
                 user: currentUser,
-                text: message,
+                text: contentToSend,
                 owner: isOwner,
-                color,
+                color: color,
                 rainbow: isRainbow,
-                font,
-                image: isImage,
                 website: isWebsite,
+                image: isImage,
+                font: font,
+                privateTo: privateTo,
                 timestamp: Date.now()
-            };
-
-            if (isWebsite) messageData.rawHtml = message;
-
-            await set(newMessageRef, messageData);
+            });
             input.value = '';
             document.getElementById('autocompleteDropdown').classList.remove('active');
         };
-
         async function sendSystemMessage(text) {
             const messagesRef = ref(db, `chatrooms/${currentRoom}/messages`);
             const newMessageRef = push(messagesRef);
-            await set(newMessageRef, { system: true, text, timestamp: Date.now() });
+            await set(newMessageRef, {
+                system: true,
+                text: text,
+                timestamp: Date.now()
+            });
         }
-
         function displayMessages(messages) {
             const container = document.getElementById('messagesContainer');
             container.innerHTML = '';
             if (!messages) return;
-
-            Object.entries(messages)
-                .sort(([,a], [,b]) => a.timestamp - b.timestamp)
-                .forEach(([id, msg]) => {
-                    const div = document.createElement('div');
-                    div.className = 'message';
-                    if (msg.system) div.classList.add('server');
-
-                    if (msg.system) {
-                        const content = document.createElement('div');
-                        content.className = 'message-content';
-                        content.textContent = `server: ${msg.text}`;
-                        div.appendChild(content);
+            const sortedMessages = Object.entries(messages).sort((a, b) => a[1].timestamp - b[1].timestamp);
+            sortedMessages.forEach(([id, msg]) => {
+                if (msg.privateTo && currentUser !== msg.user && currentUser !== msg.privateTo) {
+                    return; // Skip if not sender or receiver
+                }
+                const div = document.createElement('div');
+                div.className = 'message';
+                if (msg.system) {
+                    div.classList.add('server');
+                    const content = document.createElement('div');
+                    content.className = 'message-content';
+                    content.textContent = `server: ${msg.text}`;
+                    div.appendChild(content);
+                } else {
+                    if (msg.owner) div.classList.add('owner');
+                    let prefix = msg.user + ': ';
+                    if (msg.privateTo) {
+                        prefix = `DM ${currentUser === msg.user ? 'to ' + msg.privateTo : 'from ' + msg.user}: `;
+                    }
+                    const content = document.createElement('div');
+                    content.className = 'message-content';
+                    if (msg.font) content.style.fontFamily = msg.font;
+                    if (msg.website) {
+                        const escapedText = msg.text.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+                        content.innerHTML = `
+                            ${prefix}<br>
+                            <div class="html-preview">
+                                <iframe 
+                                    sandbox="allow-scripts allow-same-origin allow-popups allow-forms" 
+                                    srcdoc="${escapedText}"
+                                ></iframe>
+                                <button class="fullscreen-btn" onclick="openFullscreen(this.parentNode)">Fullscreen</button>
+                            </div>
+                        `;
+                    } else if (msg.image) {
+                        const textWithLinks = linkify(msg.text);
+                        content.innerHTML = `${prefix}${textWithLinks}`;
+                        const urlMatch = msg.text.match(/https?:\/\/[^\s]+/);
+                        if (urlMatch) {
+                            const img = document.createElement('img');
+                            img.src = urlMatch[0];
+                            img.className = 'message-image';
+                            img.onclick = () => window.open(urlMatch[0], '_blank');
+                            img.onerror = () => img.style.display = 'none';
+                            content.appendChild(img);
+                        }
+                    } else if (msg.rainbow) {
+                        const textWithLinks = linkify(msg.text);
+                        content.innerHTML = `${prefix}<span class="rainbow">${textWithLinks}</span>`;
+                    } else if (msg.color) {
+                        const textWithLinks = linkify(msg.text);
+                        content.innerHTML = `${prefix}<span style="color: ${msg.color}">${textWithLinks}</span>`;
                     } else {
-                        if (msg.owner) div.classList.add('owner');
-                        const prefix = msg.owner ? `owner ${msg.user}: ` : `${msg.user}: `;
-                        const content = document.createElement('div');
-                        content.className = 'message-content';
-
-                        if (msg.font) content.style.fontFamily = msg.font;
-
-                        if (msg.website) {
-                            const safeHtml = msg.text
-                                .replace(/</g, '&lt;')
-                                .replace(/>/g, '&gt;')
-                                .replace(/"/g, '&quot;')
-                                .replace(/'/g, '&#39;');
-
-                            content.innerHTML = `${prefix}<br>
-                                <div class="html-preview">
-                                    <div class="html-preview-loading">Loading preview...</div>
-                                    <iframe 
-                                        srcdoc="${safeHtml}"
-                                        sandbox="allow-scripts allow-same-origin"
-                                        onload="this.previousElementSibling.style.display='none';"
-                                        onerror="this.previousElementSibling.innerHTML='Failed to load preview';"
-                                    ></iframe>
-                                </div>`;
-                        } else if (msg.image) {
-                            const textWithLinks = linkify(msg.text);
-                            content.innerHTML = `${prefix}${textWithLinks}`;
-                            const urlMatch = msg.text.match(/https?:\/\/[^\s]+/);
-                            if (urlMatch) {
-                                const img = document.createElement('img');
-                                img.src = urlMatch[0];
-                                img.className = 'message-image';
-                                img.onclick = () => window.open(urlMatch[0], '_blank');
-                                img.onerror = () => img.style.display = 'none';
-                                content.appendChild(img);
-                            }
-                        } else if (msg.rainbow) {
-                            const textWithLinks = linkify(msg.text);
-                            content.innerHTML = `${prefix}<span class="rainbow">${textWithLinks}</span>`;
-                        } else if (msg.color) {
-                            const textWithLinks = linkify(msg.text);
-                            content.innerHTML = `${prefix}<span style="color: ${msg.color}">${textWithLinks}</span>`;
-                        } else {
-                            const textWithLinks = linkify(msg.text);
-                            content.innerHTML = `${prefix}${textWithLinks}`;
-                        }
-
-                        if (msg.edited) {
-                            content.innerHTML += ' <span style="color: #999; font-size: 11px;">(edited)</span>';
-                        }
-
-                        div.appendChild(content);
-
-                        if (msg.user === currentUser && !msg.system) {
+                        const textWithLinks = linkify(msg.text);
+                        content.innerHTML = `${prefix}${textWithLinks}`;
+                    }
+                    if (msg.edited) {
+                        content.innerHTML += ' <span style="color: #999; font-size: 11px;">(edited)</span>';
+                    }
+                    div.appendChild(content);
+                    if (msg.user === currentUser && !msg.system) {
+                        const deleteBtn = document.createElement('div');
+                        deleteBtn.className = 'delete-icon';
+                        deleteBtn.textContent = '🗑️';
+                        deleteBtn.onclick = () => deleteOwnMessage(id, msg.user);
+                        div.appendChild(deleteBtn);
+                    }
+                    if (isOwner && !msg.system) {
+                        const editBtn = document.createElement('div');
+                        editBtn.className = 'edit-icon';
+                        editBtn.textContent = '✏️ Edit';
+                        editBtn.onclick = () => showEditModal(id, msg.text);
+                        div.appendChild(editBtn);
+                        if (msg.user !== currentUser) {
                             const deleteBtn = document.createElement('div');
                             deleteBtn.className = 'delete-icon';
-                            deleteBtn.textContent = '🗑️';
-                            deleteBtn.onclick = () => deleteOwnMessage(id, msg.user);
+                            deleteBtn.textContent = '🗑️ Delete';
+                            deleteBtn.onclick = () => deleteMessage(id);
                             div.appendChild(deleteBtn);
                         }
-
-                        if (isOwner && !msg.system) {
-                            const editBtn = document.createElement('div');
-                            editBtn.className = 'edit-icon';
-                            editBtn.textContent = '✏️ Edit';
-                            editBtn.onclick = () => showEditModal(id, msg.text);
-                            div.appendChild(editBtn);
-                            if (msg.user !== currentUser) {
-                                const deleteBtn = document.createElement('div');
-                                deleteBtn.className = 'delete-icon';
-                                deleteBtn.textContent = '🗑️ Delete';
-                                deleteBtn.onclick = () => deleteMessage(id);
-                                div.appendChild(deleteBtn);
-                            }
-                        }
                     }
-
-                    container.appendChild(div);
-                });
-
+                }
+                container.appendChild(div);
+            });
             container.scrollTop = container.scrollHeight;
         }
-
         function linkify(text) {
             const urlRegex = /(https?:\/\/[^\s]+)/g;
-            return text.replace(urlRegex, (url) => `<a href="${url}" target="_blank" class="message-link">${url}</a>`);
+            return text.replace(urlRegex, (url) => {
+                return `<a href="${url}" target="_blank" class="message-link">${url}</a>`;
+            });
         }
-
+        window.openFullscreen = (preview) => {
+            const iframe = preview.querySelector('iframe');
+            const srcdoc = iframe.getAttribute('srcdoc');
+            const overlay = document.getElementById('fullscreenOverlay');
+            const content = document.getElementById('fullscreenContent');
+            content.innerHTML = `
+                <iframe 
+                    sandbox="allow-scripts allow-same-origin allow-popups allow-forms" 
+                    srcdoc="${srcdoc}"
+                ></iframe>
+            `;
+            overlay.classList.add('active');
+        };
+        window.closeFullscreen = () => {
+            const overlay = document.getElementById('fullscreenOverlay');
+            const content = document.getElementById('fullscreenContent');
+            overlay.classList.remove('active');
+            content.innerHTML = '';
+        };
         window.leaveChatroom = async () => {
             if (userRef) {
                 await sendSystemMessage(`${currentUser} left`);
@@ -777,8 +895,8 @@
             currentUser = null;
             isOwner = false;
             userRef = null;
+            participants = [];
         };
-
         window.closeChatroom = async () => {
             if (!isOwner) return;
             if (confirm('Are you sure you want to close this chatroom? This will remove all data and no one will be able to join.')) {
@@ -795,19 +913,17 @@
                     currentUser = null;
                     isOwner = false;
                     userRef = null;
+                    participants = [];
                 }, 500);
             }
         };
-
         window.copyCode = () => {
             navigator.clipboard.writeText(currentRoom);
             alert('Room code copied to clipboard!');
         };
-
         window.handleKeyPress = (e) => {
             if (e.key === 'Enter') sendMessage();
         };
-
         function validateUsername() {
             const username = document.getElementById('usernameInput').value.trim();
             if (!username) {
@@ -816,7 +932,6 @@
             }
             return true;
         }
-
         function generateCode() {
             const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
             let code = '';
