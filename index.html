@@ -201,6 +201,33 @@
             background: #3a3a3a;
             border-radius: 5px;
             word-wrap: break-word;
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .message-content {
+            flex: 1;
+        }
+
+        .edit-icon {
+            opacity: 0;
+            cursor: pointer;
+            padding: 5px 10px;
+            background: #4a4a4a;
+            border-radius: 3px;
+            font-size: 12px;
+            transition: opacity 0.2s;
+            margin-left: 10px;
+        }
+
+        .message:hover .edit-icon {
+            opacity: 1;
+        }
+
+        .edit-icon:hover {
+            background: #5a5a5a;
         }
 
         .message.server {
@@ -308,6 +335,18 @@
         </div>
     </div>
 
+    <!-- Edit Message Modal -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <h2>Edit Message</h2>
+            <input type="text" id="editMessageInput" placeholder="Edit message text">
+            <div class="modal-buttons">
+                <button class="btn" style="background: #4a4a4a;" onclick="hideEditModal()">Cancel</button>
+                <button class="btn" onclick="saveEditedMessage()">Save</button>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, set, push, onValue, onDisconnect, remove, get, child } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
@@ -331,6 +370,7 @@
         let isOwner = false;
         let userRef = null;
         let messagesListener = null;
+        let editingMessageId = null;
 
         window.showCreateModal = () => {
             if (!validateUsername()) return;
@@ -349,6 +389,41 @@
 
         window.hideJoinModal = () => {
             document.getElementById('joinModal').classList.remove('active');
+        };
+
+        window.showEditModal = (messageId, currentText) => {
+            editingMessageId = messageId;
+            document.getElementById('editMessageInput').value = currentText;
+            document.getElementById('editModal').classList.add('active');
+        };
+
+        window.hideEditModal = () => {
+            document.getElementById('editModal').classList.remove('active');
+            editingMessageId = null;
+        };
+
+        window.saveEditedMessage = async () => {
+            if (!editingMessageId) return;
+            
+            const newText = document.getElementById('editMessageInput').value.trim();
+            if (!newText) {
+                alert('Message cannot be empty.');
+                return;
+            }
+
+            const messageRef = ref(db, `chatrooms/${currentRoom}/messages/${editingMessageId}`);
+            const snapshot = await get(messageRef);
+            
+            if (snapshot.exists()) {
+                const messageData = snapshot.val();
+                await set(messageRef, {
+                    ...messageData,
+                    text: newText,
+                    edited: true
+                });
+            }
+
+            hideEditModal();
         };
 
         window.createChatroom = async () => {
@@ -510,20 +585,40 @@
                 
                 if (msg.system) {
                     div.classList.add('server');
-                    div.textContent = `server: ${msg.text}`;
+                    const content = document.createElement('div');
+                    content.className = 'message-content';
+                    content.textContent = `server: ${msg.text}`;
+                    div.appendChild(content);
                 } else {
                     if (msg.owner) {
                         div.classList.add('owner');
                     }
                     
                     const prefix = msg.owner ? `owner ${msg.user}: ` : `${msg.user}: `;
+                    const content = document.createElement('div');
+                    content.className = 'message-content';
                     
                     if (msg.rainbow) {
-                        div.innerHTML = `${prefix}<span class="rainbow">${msg.text}</span>`;
+                        content.innerHTML = `${prefix}<span class="rainbow">${msg.text}</span>`;
                     } else if (msg.color) {
-                        div.innerHTML = `${prefix}<span style="color: ${msg.color}">${msg.text}</span>`;
+                        content.innerHTML = `${prefix}<span style="color: ${msg.color}">${msg.text}</span>`;
                     } else {
-                        div.textContent = `${prefix}${msg.text}`;
+                        content.textContent = `${prefix}${msg.text}`;
+                    }
+
+                    if (msg.edited) {
+                        content.innerHTML += ' <span style="color: #999; font-size: 11px;">(edited)</span>';
+                    }
+                    
+                    div.appendChild(content);
+
+                    // Add edit button for owner
+                    if (isOwner && !msg.system) {
+                        const editBtn = document.createElement('div');
+                        editBtn.className = 'edit-icon';
+                        editBtn.textContent = '✏️ Edit';
+                        editBtn.onclick = () => showEditModal(id, msg.text);
+                        div.appendChild(editBtn);
                     }
                 }
                 
