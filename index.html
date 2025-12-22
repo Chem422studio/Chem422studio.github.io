@@ -351,6 +351,7 @@
             border-top: 2px solid #4a4a4a;
             display: flex;
             gap: 10px;
+            position: relative;
         }
 
         .input-area input {
@@ -396,7 +397,8 @@
             </div>
             <div class="messages" id="messagesContainer"></div>
             <div class="input-area">
-                <input type="text" id="messageInput" placeholder="Type a message..." onkeypress="handleKeyPress(event)">
+                <div class="autocomplete-dropdown" id="autocompleteDropdown"></div>
+                <input type="text" id="messageInput" placeholder="Type a message..." onkeypress="handleKeyPress(event)" oninput="handleAutocomplete()">
                 <button class="btn" onclick="sendMessage()">Send</button>
             </div>
         </div>
@@ -463,6 +465,21 @@
         let messagesListener = null;
         let editingMessageId = null;
 
+        const commands = [
+            { cmd: '/color', desc: 'Change text color - /color [color] [text]' },
+            { cmd: '/color rainbow', desc: 'Rainbow text - /color rainbow [text]' },
+            { cmd: '/html', desc: 'Display HTML - /html [html code]' },
+            { cmd: '/pic', desc: 'Display image - /pic [image url]' },
+            { cmd: '/fonts', desc: 'Change font - /fonts [font] [text]' },
+            { cmd: '/rickroll', desc: 'Rickroll a user - /rickroll [username]' }
+        ];
+
+        const availableFonts = [
+            'Arial', 'Courier New', 'Georgia', 'Times New Roman', 
+            'Verdana', 'Comic Sans MS', 'Impact', 'Trebuchet MS',
+            'Brush Script MT', 'Lucida Console', 'Palatino', 'Garamond'
+        ];
+
         window.showCreateModal = () => {
             if (!validateUsername()) return;
             document.getElementById('createModal').classList.add('active');
@@ -524,6 +541,47 @@
                 const messageRef = ref(db, `chatrooms/${currentRoom}/messages/${messageId}`);
                 await remove(messageRef);
             }
+        };
+
+        window.deleteOwnMessage = async (messageId, messageUser) => {
+            if (messageUser !== currentUser && !isOwner) return;
+            
+            if (confirm('Are you sure you want to delete this message?')) {
+                const messageRef = ref(db, `chatrooms/${currentRoom}/messages/${messageId}`);
+                await remove(messageRef);
+            }
+        };
+
+        window.handleAutocomplete = () => {
+            const input = document.getElementById('messageInput');
+            const dropdown = document.getElementById('autocompleteDropdown');
+            const value = input.value;
+
+            if (value.startsWith('/')) {
+                const searchTerm = value.toLowerCase();
+                const filtered = commands.filter(c => c.cmd.toLowerCase().startsWith(searchTerm));
+
+                if (filtered.length > 0) {
+                    dropdown.innerHTML = filtered.map(c => 
+                        `<div class="autocomplete-item" onclick="selectCommand('${c.cmd}')">
+                            <div class="command">${c.cmd}</div>
+                            <div class="description">${c.desc}</div>
+                        </div>`
+                    ).join('');
+                    dropdown.classList.add('active');
+                } else {
+                    dropdown.classList.remove('active');
+                }
+            } else {
+                dropdown.classList.remove('active');
+            }
+        };
+
+        window.selectCommand = (cmd) => {
+            const input = document.getElementById('messageInput');
+            input.value = cmd + ' ';
+            input.focus();
+            document.getElementById('autocompleteDropdown').classList.remove('active');
         };
 
         window.createChatroom = async () => {
@@ -633,6 +691,16 @@
             let isRainbow = false;
             let isHtml = false;
             let isImage = false;
+            let font = null;
+
+            // Check for /rickroll command
+            if (message.startsWith('/rickroll ')) {
+                const targetUser = message.substring(10).trim();
+                window.open('https://www.youtube.com/watch?v=dQw4w9WgXcQ', '_blank');
+                await sendSystemMessage(`${currentUser} attempted to rickroll ${targetUser} 🎵`);
+                input.value = '';
+                return;
+            }
 
             // Check for ggjimbob
             if (message.toLowerCase() === 'ggjimbob') {
@@ -643,6 +711,21 @@
             if (message.startsWith('/html ')) {
                 isHtml = true;
                 message = message.substring(6);
+            }
+
+            // Check for /pic command
+            else if (message.startsWith('/pic ')) {
+                isImage = true;
+                message = message.substring(5);
+            }
+
+            // Check for /fonts command
+            else if (message.startsWith('/fonts ')) {
+                const parts = message.substring(7).split(' ');
+                if (parts.length >= 2) {
+                    font = parts[0];
+                    message = parts.slice(1).join(' ');
+                }
             }
 
             // Check for /color command
@@ -659,11 +742,13 @@
                 }
             }
 
-            // Check if message is an image URL
-            const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp'];
-            const lowerMessage = message.toLowerCase();
-            if (imageExtensions.some(ext => lowerMessage.includes(ext))) {
-                isImage = true;
+            // Auto-detect image URLs if not using /pic
+            else {
+                const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp'];
+                const lowerMessage = message.toLowerCase();
+                if (imageExtensions.some(ext => lowerMessage.includes(ext))) {
+                    isImage = true;
+                }
             }
 
             await set(newMessageRef, {
@@ -674,10 +759,12 @@
                 rainbow: isRainbow,
                 html: isHtml,
                 image: isImage,
+                font: font,
                 timestamp: Date.now()
             });
 
             input.value = '';
+            document.getElementById('autocompleteDropdown').classList.remove('active');
         };
 
         async function sendSystemMessage(text) {
@@ -720,11 +807,16 @@
                     const content = document.createElement('div');
                     content.className = 'message-content';
                     
+                    // Apply font if specified
+                    if (msg.font) {
+                        content.style.fontFamily = msg.font;
+                    }
+
                     // Display HTML preview
                     if (msg.html) {
                         content.innerHTML = `${prefix}<br><div class="html-preview">${msg.text}</div>`;
                     }
-                    // Display image
+                    // Display image with /pic command
                     else if (msg.image) {
                         const textWithLinks = linkify(msg.text);
                         content.innerHTML = `${prefix}${textWithLinks}`;
@@ -762,6 +854,15 @@
                     
                     div.appendChild(content);
 
+                    // Users can delete their own messages
+                    if (msg.user === currentUser && !msg.system) {
+                        const deleteBtn = document.createElement('div');
+                        deleteBtn.className = 'delete-icon';
+                        deleteBtn.textContent = '🗑️';
+                        deleteBtn.onclick = () => deleteOwnMessage(id, msg.user);
+                        div.appendChild(deleteBtn);
+                    }
+
                     // Add edit and delete buttons for owner
                     if (isOwner && !msg.system) {
                         const editBtn = document.createElement('div');
@@ -770,11 +871,14 @@
                         editBtn.onclick = () => showEditModal(id, msg.text);
                         div.appendChild(editBtn);
 
-                        const deleteBtn = document.createElement('div');
-                        deleteBtn.className = 'delete-icon';
-                        deleteBtn.textContent = '🗑️ Delete';
-                        deleteBtn.onclick = () => deleteMessage(id);
-                        div.appendChild(deleteBtn);
+                        // Only show delete if not already shown for own message
+                        if (msg.user !== currentUser) {
+                            const deleteBtn = document.createElement('div');
+                            deleteBtn.className = 'delete-icon';
+                            deleteBtn.textContent = '🗑️ Delete';
+                            deleteBtn.onclick = () => deleteMessage(id);
+                            div.appendChild(deleteBtn);
+                        }
                     }
                 }
                 
