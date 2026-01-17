@@ -1,1 +1,1 @@
-the fred pic was made by orange the wiz
+the fred pic was made by reid
