@@ -425,6 +425,11 @@
             display: flex;
             gap: 10px;
             flex-wrap: wrap;
+            flex-direction: column;
+        }
+        .voice-controls button {
+            font-size: 14px;
+            padding: 10px 15px;
         }
         .voice-users {
             flex: 1;
@@ -456,6 +461,7 @@
         <div class="voice-controls">
             <button id="joinVcBtn" class="btn hidden" onclick="joinVoiceChat()">Join Voice Chat</button>
             <button id="leaveVcBtn" class="btn btn-danger hidden" onclick="leaveVoiceChat()">Leave Voice Chat</button>
+            <button id="muteBtn" class="btn hidden" onclick="toggleMute()" style="background: #faa61a;">🎤 Mute</button>
         </div>
         <div class="voice-users" id="voiceUsersList">
             <!-- Users in VC -->
@@ -568,6 +574,9 @@
         let isInVoiceChat = false;
         let voiceChatListener = null;
         let voiceUsersListener = null;
+        let localStream = null;
+        let peerConnections = {};
+        let isMuted = false;
 
         const commands = [
             { cmd: '/color', desc: 'Change text color', sub: ['red', 'blue', 'green', 'yellow', 'purple', 'orange', 'rainbow'] },
@@ -721,32 +730,174 @@
             const titleEl = document.getElementById('vcTitle');
             const joinBtn = document.getElementById('joinVcBtn');
             const leaveBtn = document.getElementById('leaveVcBtn');
+            const muteBtn = document.getElementById('muteBtn');
 
             if (currentVoiceChat && currentVoiceChat.active) {
                 sidebar.classList.remove('hidden');
                 titleEl.textContent = currentVoiceChat.title || 'Voice Chat';
                 joinBtn.classList.toggle('hidden', isInVoiceChat);
                 leaveBtn.classList.toggle('hidden', !isInVoiceChat);
+                muteBtn.classList.toggle('hidden', !isInVoiceChat);
             } else {
                 sidebar.classList.add('hidden');
                 isInVoiceChat = false;
             }
         }
 
+        window.toggleMute = () => {
+            if (!localStream) return;
+            isMuted = !isMuted;
+            localStream.getAudioTracks().forEach(track => {
+                track.enabled = !isMuted;
+            });
+            const muteBtn = document.getElementById('muteBtn');
+            muteBtn.textContent = isMuted ? '🔇 Unmute' : '🎤 Mute';
+            muteBtn.style.background = isMuted ? '#ed4245' : '#faa61a';
+        };
+
         window.joinVoiceChat = async () => {
-            const userVcRef = ref(db, `chatrooms/${currentRoom}/voiceChat/users/${currentUser}`);
-            await set(userVcRef, { name: currentUser, joined: Date.now() });
-            isInVoiceChat = true;
-            updateVoiceSidebar();
-            await sendSystemMessage(`${currentUser} joined the voice chat`);
+            try {
+                // Request microphone permission
+                localStream = await navigator.mediaDevices.getUserMedia({ 
+                    audio: {
+                        echoCancellation: true,
+                        noiseSuppression: true,
+                        autoGainControl: true
+                    } 
+                });
+
+                const userVcRef = ref(db, `chatrooms/${currentRoom}/voiceChat/users/${currentUser}`);
+                await set(userVcRef, { name: currentUser, joined: Date.now() });
+                isInVoiceChat = true;
+                updateVoiceSidebar();
+                await sendSystemMessage(`${currentUser} joined the voice chat`);
+
+                // Setup WebRTC signaling
+                setupSignaling();
+            } catch (error) {
+                console.error('Microphone access denied:', error);
+                alert('Please allow microphone access to join voice chat!');
+            }
         };
 
         window.leaveVoiceChat = async () => {
+            // Stop local audio stream
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+                localStream = null;
+            }
+
+            // Close all peer connections
+            Object.values(peerConnections).forEach(pc => pc.close());
+            peerConnections = {};
+
             await remove(ref(db, `chatrooms/${currentRoom}/voiceChat/users/${currentUser}`));
+            await remove(ref(db, `chatrooms/${currentRoom}/voiceChat/signals/${currentUser}`));
             isInVoiceChat = false;
+            isMuted = false;
             updateVoiceSidebar();
             await sendSystemMessage(`${currentUser} left the voice chat`);
         };
+
+        // WebRTC Signaling Setup
+        function setupSignaling() {
+            const signalRef = ref(db, `chatrooms/${currentRoom}/voiceChat/signals`);
+            
+            onValue(signalRef, async (snapshot) => {
+                const signals = snapshot.val() || {};
+                
+                for (const [peerId, signal] of Object.entries(signals)) {
+                    if (peerId === currentUser) continue;
+                    
+                    if (signal.offer && !peerConnections[peerId]) {
+                        await handleOffer(peerId, signal.offer);
+                    } else if (signal.answer && peerConnections[peerId]) {
+                        await peerConnections[peerId].setRemoteDescription(new RTCSessionDescription(signal.answer));
+                    } else if (signal.ice && peerConnections[peerId]) {
+                        await peerConnections[peerId].addIceCandidate(new RTCIceCandidate(signal.ice));
+                    }
+                }
+            });
+
+            // Create offers to all existing users
+            setTimeout(() => createOffersToAllUsers(), 1000);
+        }
+
+        async function createOffersToAllUsers() {
+            const usersRef = ref(db, `chatrooms/${currentRoom}/voiceChat/users`);
+            const snapshot = await get(usersRef);
+            const users = snapshot.val() || {};
+            
+            for (const userName of Object.keys(users)) {
+                if (userName !== currentUser && !peerConnections[userName]) {
+                    await createOffer(userName);
+                }
+            }
+        }
+
+        async function createOffer(peerId) {
+            const pc = createPeerConnection(peerId);
+            const offer = await pc.createOffer();
+            await pc.setLocalDescription(offer);
+            
+            await set(ref(db, `chatrooms/${currentRoom}/voiceChat/signals/${currentUser}`), {
+                offer: offer,
+                timestamp: Date.now()
+            });
+        }
+
+        async function handleOffer(peerId, offer) {
+            const pc = createPeerConnection(peerId);
+            await pc.setRemoteDescription(new RTCSessionDescription(offer));
+            const answer = await pc.createAnswer();
+            await pc.setLocalDescription(answer);
+            
+            await set(ref(db, `chatrooms/${currentRoom}/voiceChat/signals/${currentUser}`), {
+                answer: answer,
+                timestamp: Date.now()
+            });
+        }
+
+        function createPeerConnection(peerId) {
+            const configuration = {
+                iceServers: [
+                    { urls: 'stun:stun.l.google.com:19302' },
+                    { urls: 'stun:stun1.l.google.com:19302' }
+                ]
+            };
+            
+            const pc = new RTCPeerConnection(configuration);
+            peerConnections[peerId] = pc;
+
+            // Add local stream to connection
+            if (localStream) {
+                localStream.getTracks().forEach(track => {
+                    pc.addTrack(track, localStream);
+                });
+            }
+
+            // Handle incoming audio
+            pc.ontrack = (event) => {
+                const audioElement = new Audio();
+                audioElement.srcObject = event.streams[0];
+                audioElement.play().catch(e => console.log('Audio play failed:', e));
+            };
+
+            // Handle ICE candidates
+            pc.onicecandidate = (event) => {
+                if (event.candidate) {
+                    set(ref(db, `chatrooms/${currentRoom}/voiceChat/signals/${currentUser}/ice`), event.candidate.toJSON());
+                }
+            };
+
+            pc.oniceconnectionstatechange = () => {
+                if (pc.iceConnectionState === 'disconnected' || pc.iceConnectionState === 'failed') {
+                    delete peerConnections[peerId];
+                }
+            };
+
+            return pc;
+        }
 
         // Voice Chat Listeners (initialized when joining room)
         function initializeVoiceChatListeners(roomCode) {
@@ -1039,6 +1190,16 @@
         };
 
         window.leaveChatroom = async () => {
+            // Clean up voice chat if active
+            if (isInVoiceChat) {
+                if (localStream) {
+                    localStream.getTracks().forEach(track => track.stop());
+                    localStream = null;
+                }
+                Object.values(peerConnections).forEach(pc => pc.close());
+                peerConnections = {};
+            }
+
             if (userRef) {
                 await sendSystemMessage(`${currentUser} left`);
                 await remove(userRef);
@@ -1048,6 +1209,7 @@
             if (voiceUsersListener) voiceUsersListener();
             if (isInVoiceChat) {
                 await remove(ref(db, `chatrooms/${currentRoom}/voiceChat/users/${currentUser}`));
+                await remove(ref(db, `chatrooms/${currentRoom}/voiceChat/signals/${currentUser}`));
             }
             document.getElementById('chatroom').style.display = 'none';
             document.getElementById('mainMenu').style.display = 'flex';
@@ -1062,6 +1224,7 @@
             processedEffects = new Set();
             currentVoiceChat = null;
             isInVoiceChat = false;
+            isMuted = false;
         };
 
         window.closeChatroom = async () => {
