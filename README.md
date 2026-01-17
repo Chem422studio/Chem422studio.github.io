@@ -1,1 +1,1 @@
-the fred pic was made by reid
+the fred pic was made by Reid
